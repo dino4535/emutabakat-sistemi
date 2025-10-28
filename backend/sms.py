@@ -98,6 +98,10 @@ class GoldSMS:
             else:
                 logger.error(f"GoldSMS kredi kontrol hatası: {response.status_code}")
                 return False
+        except requests.exceptions.Timeout:
+            logger.warning(f"GoldSMS API timeout (sunucu firewall engeli olabilir)")
+            # Timeout durumunda False döndür ama sistem çalışmaya devam etsin
+            return False
         except Exception as e:
             logger.error(f"GoldSMS kredi kontrol hatası: {e}")
             return False
@@ -183,7 +187,7 @@ class GoldSMS:
                 return False
                 
         except requests.exceptions.Timeout:
-            logger.error("SMS API zaman aşımı")
+            logger.warning("SMS API timeout (sunucu internete erişemiyor, firewall kontrol edin)")
             return False
         except Exception as e:
             logger.error(f"SMS gönderme hatası: {e}")
