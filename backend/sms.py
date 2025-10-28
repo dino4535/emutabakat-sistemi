@@ -102,7 +102,8 @@ class GoldSMS:
                 self.api_url,
                 json=payload_json,
                 headers={'Content-Type': 'application/json'},
-                timeout=30
+                timeout=60,  # Timeout 60 saniyeye çıkarıldı
+                verify=False  # SSL doğrulama kapalı
             )
             
             # Yanıt kontrolü
