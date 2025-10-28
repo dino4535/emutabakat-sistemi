@@ -297,6 +297,7 @@ def verify_mutabakat_by_no(
         "mutabakat_no": mutabakat.mutabakat_no,
         "company_name": company.company_name if company else "Bilinmiyor",
         "company_vkn": company.vkn if company else None,
+        "company_logo": company.logo_path if company and company.logo_path else None,
         "durum": mutabakat.durum.value if mutabakat.durum else "Bilinmiyor",
         "donem_baslangic": mutabakat.donem_baslangic.isoformat() if mutabakat.donem_baslangic else None,
         "donem_bitis": mutabakat.donem_bitis.isoformat() if mutabakat.donem_bitis else None,

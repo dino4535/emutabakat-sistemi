@@ -4,6 +4,51 @@
   animation: fadeIn 0.4s ease-in;
 }
 
+/* Public Page Header */
+.public-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem 2rem;
+  margin: -2rem -2rem 2rem -2rem;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.public-header .logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.public-header .company-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  background: white;
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.public-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.public-header .company-name {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  margin-left: auto;
+}
+
 .verify-header {
   text-align: center;
   margin-bottom: 3rem;
@@ -967,6 +1012,33 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .public-header {
+    margin: -2rem -1rem 1.5rem -1rem;
+    padding: 1rem;
+  }
+
+  .public-header .logo-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .public-header .company-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .public-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .public-header .company-name {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+
   .mutabakat-info-card,
   .logs-card {
     padding: 1.5rem;

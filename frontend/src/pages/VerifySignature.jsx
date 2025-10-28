@@ -174,8 +174,23 @@ export default function VerifySignature() {
       {/* Public Sayfalar için Logo/Header */}
       <div className="public-header">
         <div className="logo-container">
-          <img src="/dino-logo.png" alt="Logo" className="company-logo" />
+          {mutabakatInfo && mutabakatInfo.company_logo ? (
+            <img 
+              src={mutabakatInfo.company_logo} 
+              alt={mutabakatInfo.company_name} 
+              className="company-logo" 
+              onError={(e) => {
+                // Logo yüklenemezse default logo göster
+                e.target.src = '/dino-logo.png'
+              }}
+            />
+          ) : (
+            <img src="/dino-logo.png" alt="Logo" className="company-logo" />
+          )}
           <h2>E-Mutabakat Sistemi</h2>
+          {mutabakatInfo && (
+            <p className="company-name">{mutabakatInfo.company_name}</p>
+          )}
         </div>
       </div>
 
