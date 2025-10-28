@@ -1,0 +1,156 @@
+.approval-success-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.success-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 60px 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-icon {
+  font-size: 5rem;
+  margin-bottom: 30px;
+  animation: bounceIn 0.6s ease-out 0.2s backwards;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.success-icon.icon-approved {
+  color: #10b981;
+}
+
+.success-icon.icon-rejected {
+  color: #ef4444;
+}
+
+.success-card h1 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.success-message {
+  color: #666;
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.mutabakat-info-box {
+  background: #f8f9ff;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 30px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.info-icon {
+  font-size: 2rem;
+  color: #667eea;
+}
+
+.info-label {
+  color: #666;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.info-value {
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.info-text {
+  margin: 30px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 15px;
+}
+
+.info-text p {
+  color: #555;
+  line-height: 1.8;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.security-notice {
+  margin-top: 30px;
+  padding: 15px;
+  background: #fffbeb;
+  border: 2px solid #fcd34d;
+  border-radius: 10px;
+}
+
+.security-notice p {
+  margin: 0;
+  color: #92400e;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .success-card {
+    padding: 40px 25px;
+  }
+
+  .success-icon {
+    font-size: 3.5rem;
+  }
+
+  .success-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .success-message {
+    font-size: 1rem;
+  }
+
+  .mutabakat-info-box {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+

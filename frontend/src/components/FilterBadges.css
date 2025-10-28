@@ -1,0 +1,121 @@
+/* ======================================
+   FILTER BADGES
+====================================== */
+.filter-badges {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.filter-badges-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.filter-badges-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.btn-clear-all-badges {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--danger-color);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-all-badges:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.filter-badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Single Badge */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid var(--primary-color);
+  border-radius: 20px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.filter-badge:hover {
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+}
+
+.filter-badge-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.filter-badge-value {
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.filter-badge-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.filter-badge-remove:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.filter-badge-remove:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .filter-badges {
+    padding: 10px 12px;
+  }
+
+  .filter-badge {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .filter-badges-title {
+    font-size: 12px;
+  }
+
+  .btn-clear-all-badges {
+    font-size: 11px;
+  }
+}
+

@@ -1,0 +1,229 @@
+/* ======================================
+   FILTER PANEL
+====================================== */
+.filter-panel {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.filter-panel.collapsed {
+  box-shadow: var(--shadow);
+}
+
+.filter-panel.open {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Header */
+.filter-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.filter-panel.open .filter-panel-header {
+  border-bottom-color: var(--border-color);
+}
+
+.filter-panel-header:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.filter-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.filter-panel-title .filter-icon {
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+.filter-count-badge {
+  background: var(--primary-color);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.filter-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-clear-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger-color);
+  background: transparent;
+  border: 1px solid var(--danger-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-filters:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.btn-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+/* Content */
+.filter-panel-content {
+  padding: 20px;
+}
+
+/* ======================================
+   FILTER GROUP
+====================================== */
+.filter-group {
+  margin-bottom: 24px;
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group-label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.filter-group-content {
+  display: grid;
+  gap: 16px;
+}
+
+.filter-group-content.columns-1 {
+  grid-template-columns: 1fr;
+}
+
+.filter-group-content.columns-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.filter-group-content.columns-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.filter-group-content.columns-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ======================================
+   FILTER ITEM
+====================================== */
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.filter-item-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Input Styling */
+.filter-item input[type="text"],
+.filter-item input[type="date"],
+.filter-item input[type="number"],
+.filter-item select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: white;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.filter-item input:focus,
+.filter-item select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filter-item input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* ======================================
+   RESPONSIVE
+====================================== */
+@media (max-width: 768px) {
+  .filter-panel-header {
+    padding: 12px 16px;
+  }
+
+  .filter-panel-content {
+    padding: 16px;
+  }
+
+  .filter-group-content.columns-2,
+  .filter-group-content.columns-3,
+  .filter-group-content.columns-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-clear-filters {
+    font-size: 0;
+    padding: 6px 10px;
+  }
+
+  .btn-clear-filters svg {
+    margin: 0;
+  }
+}
+

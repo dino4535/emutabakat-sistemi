@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #366092, #4a7ab8); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
+        .button { display: inline-block; padding: 12px 30px; background: #48bb78; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .success-icon { font-size: 48px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>Mutabakat Onaylandı!</h1>
+        </div>
+        <div class="content">
+            <p>Merhaba,</p>
+            <p><strong>{{ mutabakat_no }}</strong> numaralı mutabakatınız onaylandı.</p>
+            
+            <h3>Mutabakat Detayları:</h3>
+            <ul>
+                <li><strong>Mutabakat No:</strong> {{ mutabakat_no }}</li>
+                <li><strong>Dönem:</strong> {{ donem }}</li>
+                <li><strong>Toplam Bakiye:</strong> {{ bakiye }}</li>
+                <li><strong>Onay Tarihi:</strong> {{ onay_tarihi }}</li>
+            </ul>
+            
+            <p>Mutabakat detaylarını görmek için aşağıdaki butona tıklayabilirsiniz:</p>
+            <a href="{{ link }}" class="button">Mutabakatı Görüntüle</a>
+        </div>
+        <div class="footer">
+            <p>E-Mutabakat Sistemi © 2025 | Bu otomatik bir emaildir, lütfen yanıtlamayın.</p>
+        </div>
+    </div>
+</body>
+</html>
+

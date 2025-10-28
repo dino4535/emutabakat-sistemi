@@ -1,0 +1,226 @@
+/* KVKK Onayları - Profil Görünümü */
+
+.kvkk-consents-view {
+  padding: 24px;
+}
+
+.kvkk-warning-box {
+  text-align: center;
+  padding: 48px;
+  background: #fff8f0;
+  border: 2px solid #ff9800;
+  border-radius: 12px;
+}
+
+.kvkk-warning-box h3 {
+  margin: 16px 0;
+  color: #e65100;
+  font-size: 24px;
+}
+
+.kvkk-warning-box p {
+  color: #f57c00;
+  font-size: 16px;
+  max-width: 500px;
+  margin: 0 auto 16px auto;
+  line-height: 1.6;
+}
+
+.kvkk-consent-cards {
+  display: grid;
+  gap: 20px;
+}
+
+.kvkk-consent-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.kvkk-consent-card.approved {
+  border-color: #27ae60;
+  background: #f0fff4;
+}
+
+.kvkk-consent-card.pending {
+  border-color: #e0e0e0;
+  background: #f8f9fa;
+}
+
+.kvkk-consent-card.highlighted {
+  border-color: #ff9800;
+  background: #fff8f0;
+}
+
+.kvkk-consent-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.kvkk-consent-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.kvkk-consent-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.kvkk-consent-header h4 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.kvkk-consent-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #7f8c8d;
+  line-height: 1.5;
+}
+
+.kvkk-consent-details {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.kvkk-consent-card.approved .kvkk-consent-details {
+  border-left-color: #27ae60;
+}
+
+.kvkk-consent-card.highlighted .kvkk-consent-details {
+  border-left-color: #ff9800;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.kvkk-legal-info {
+  margin-top: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border-radius: 12px;
+  border: 2px solid #2196f3;
+}
+
+.kvkk-legal-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.legal-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.legal-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.legal-label {
+  font-size: 12px;
+  color: #7f8c8d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legal-value {
+  font-size: 14px;
+  color: #2c3e50;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.badge-sm {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #27ae60;
+  color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .kvkk-consents-view {
+    padding: 16px;
+  }
+
+  .kvkk-consent-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .kvkk-consent-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+
+  .kvkk-consent-header h4 {
+    font-size: 16px;
+  }
+
+  .legal-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+}
+

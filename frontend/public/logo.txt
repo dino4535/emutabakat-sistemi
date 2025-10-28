@@ -1,0 +1,9 @@
+Logo dosyasını buraya koyun:
+- frontend/public/dino-logo.png
+
+veya
+
+- frontend/public/dino-logo.svg
+
+Dosya adı: dino-logo.png veya dino-logo.svg
+

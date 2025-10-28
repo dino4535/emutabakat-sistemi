@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f56565, #e53e3e); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #fff5f5; padding: 30px; border: 1px solid #fed7d7; }
+        .button { display: inline-block; padding: 12px 30px; background: #366092; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .error-icon { font-size: 48px; }
+        .reason-box { background: white; padding: 15px; border-left: 4px solid #f56565; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="error-icon">❌</div>
+            <h1>Mutabakat Reddedildi</h1>
+        </div>
+        <div class="content">
+            <p>Merhaba,</p>
+            <p><strong>{{ mutabakat_no }}</strong> numaralı mutabakatınız red edildi.</p>
+            
+            <div class="reason-box">
+                <h4>Red Nedeni:</h4>
+                <p>{{ red_nedeni }}</p>
+            </div>
+            
+            <h3>Mutabakat Detayları:</h3>
+            <ul>
+                <li><strong>Mutabakat No:</strong> {{ mutabakat_no }}</li>
+                <li><strong>Dönem:</strong> {{ donem }}</li>
+                <li><strong>Red Tarihi:</strong> {{ red_tarihi }}</li>
+            </ul>
+            
+            <p>Detaylı bilgi için lütfen müşteri ile iletişime geçin.</p>
+            <a href="{{ link }}" class="button">Detayları Görüntüle</a>
+        </div>
+        <div class="footer">
+            <p>E-Mutabakat Sistemi © 2025 | Bu otomatik bir emaildir, lütfen yanıtlamayın.</p>
+        </div>
+    </div>
+</body>
+</html>
+

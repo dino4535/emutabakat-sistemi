@@ -1,0 +1,545 @@
+.mutabakat-list {
+  width: 100%;
+}
+
+/* Müşteri uyarı mesajları */
+.customer-alert {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border-left: 4px solid;
+}
+
+.customer-alert strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.customer-alert p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  border-left-color: var(--warning-color);
+  color: #856404;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-left-color: #17a2b8;
+  color: #0c5460;
+}
+
+/* Bekleyen mutabakat satırı vurgulama */
+.highlight-row {
+  background-color: #fff3cd !important;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    background-color: #fff3cd;
+  }
+  50% {
+    background-color: #fffaeb;
+  }
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(139, 92, 246, 0.05));
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.list-header-left h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.list-header-left p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Header aksiyonları (Yeni Mutabakat ve Toplu Gönder butonları) */
+.list-header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Yeni Mutabakat butonu - daha küçük */
+.btn-create {
+  padding: 10px 20px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Toplu Gönder butonu */
+.list-header-actions .btn-success {
+  padding: 10px 20px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Filtreleme */
+.filter-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.filter-label svg {
+  color: var(--primary-color);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 10px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.filter-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  border: 2px solid var(--border-color);
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.filter-btn.active {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.filter-btn .badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+.filter-btn:not(.active) .badge {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+.filter-btn.active .badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+/* Oluşturan kolonu */
+.sender-cell {
+  padding: 8px 12px;
+}
+
+.sender-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sender-info strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sender-info small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.filter-btn .badge-warning {
+  background: var(--warning-color);
+  color: white;
+}
+
+.filter-btn .badge-success {
+  background: var(--success-color);
+  color: white;
+}
+
+.filter-btn .badge-danger {
+  background: var(--danger-color);
+  color: white;
+}
+
+/* Sonuç bilgisi */
+.results-info {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(37, 99, 235, 0.05);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+.table-container {
+  overflow-x: auto;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.font-medium {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.text-danger {
+  color: var(--danger-color);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.text-success {
+  color: var(--success-color);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.table thead {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.table thead th {
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(37, 99, 235, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* ========== RESPONSIVE ========== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .list-header {
+    padding: 20px;
+  }
+  
+  .list-header-left h1 {
+    font-size: 24px;
+  }
+  
+  .table {
+    font-size: 13px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .list-header {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .list-header-left h1 {
+    font-size: 20px;
+  }
+  
+  .list-header-left p {
+    font-size: 13px;
+  }
+
+  .list-header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-create {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filter-section {
+    padding: 16px;
+  }
+
+  .filter-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .filter-btn {
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  
+  .filter-btn .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  /* Mobilde tabloyu gizle, card görünümü göster */
+  .table-container {
+    overflow: visible;
+  }
+  
+  .table {
+    display: none;
+  }
+  
+  /* Mobile Card Görünümü */
+  .mobile-card-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .mutabakat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+  }
+  
+  .mutabakat-card:active {
+    transform: scale(0.98);
+  }
+  
+  .mutabakat-card.highlight {
+    background: #fff3cd;
+    border-color: var(--warning-color);
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .card-header-left {
+    flex: 1;
+  }
+  
+  .card-mutabakat-no {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+  }
+  
+  .card-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  
+  .card-status {
+    flex-shrink: 0;
+  }
+  
+  .card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .card-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .card-field-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .card-field-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .card-field-value.borc {
+    color: var(--error-color);
+  }
+  
+  .card-field-value.alacak {
+    color: var(--success-color);
+  }
+  
+  .card-footer {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .card-footer .btn {
+    flex: 1;
+    min-width: 120px;
+    font-size: 12px;
+    padding: 8px 12px;
+    justify-content: center;
+  }
+}
+
+/* Çok Küçük Ekranlar */
+@media (max-width: 480px) {
+  .list-header {
+    padding: 12px;
+  }
+  
+  .list-header-left h1 {
+    font-size: 18px;
+  }
+  
+  .filter-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-btn {
+    font-size: 11px;
+  }
+  
+  .mutabakat-card {
+    padding: 12px;
+  }
+  
+  .card-body {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .card-footer {
+    flex-direction: column;
+  }
+  
+  .card-footer .btn {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .card-mutabakat-no {
+    font-size: 13px;
+  }
+  
+  .card-field-value {
+    font-size: 12px;
+  }
+}
+
+/* Desktop'ta mobile card'ları gizle */
+@media (min-width: 769px) {
+  .mobile-card-view {
+    display: none;
+  }
+}
+

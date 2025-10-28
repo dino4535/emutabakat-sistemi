@@ -1,0 +1,169 @@
+/* Loading Button Base */
+.loading-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  font-family: inherit;
+}
+
+.loading-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.loading-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.loading-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-button.button-loading {
+  cursor: wait;
+}
+
+/* Sizes */
+.button-small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.button-medium {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.button-large {
+  padding: 14px 28px;
+  font-size: 16px;
+}
+
+/* Variants */
+.button-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.button-secondary {
+  background-color: #64748b;
+  color: white;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background-color: #475569;
+}
+
+.button-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.button-success:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.button-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.button-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.button-outline {
+  background-color: transparent;
+  border: 2px solid #3b82f6;
+  color: #3b82f6;
+}
+
+.button-outline:hover:not(:disabled) {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Full Width */
+.button-full-width {
+  width: 100%;
+}
+
+/* Button Spinner */
+.button-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-mini {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.button-outline .spinner-mini {
+  border-color: rgba(59, 130, 246, 0.3);
+  border-top-color: #3b82f6;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button Text */
+.button-text {
+  transition: opacity 0.2s ease;
+}
+
+.button-text-loading {
+  opacity: 0.9;
+}
+
+/* Button Icon */
+.button-icon {
+  display: flex;
+  align-items: center;
+  font-size: 1.2em;
+}
+
+/* Hover Effects */
+.loading-button:not(:disabled):not(.button-loading) {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-button:not(:disabled):not(.button-loading)::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.loading-button:not(:disabled):not(.button-loading):hover::before {
+  width: 300px;
+  height: 300px;
+}
+
