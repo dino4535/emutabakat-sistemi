@@ -26,7 +26,6 @@ try:
         }
     )
     logger.info("Veritabanı motoru başarıyla oluşturuldu")
-    logger.info(f"Server: {DB_SERVER}, Database: {DB_NAME}")
 except Exception as e:
     logger.error(f"Veritabanı bağlantı hatası: {e}")
     raise
