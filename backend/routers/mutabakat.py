@@ -900,9 +900,14 @@ async def download_mutabakat_pdf(
             db.commit()
             
         except Exception as e:
+            import traceback
+            error_detail = f"PDF oluşturulurken hata oluştu: {str(e)}"
+            print(f"[PDF ERROR] {error_detail}")
+            print(f"[PDF ERROR] Traceback:")
+            traceback.print_exc()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"PDF oluşturulurken hata oluştu: {str(e)}"
+                detail=error_detail
             )
     
     # PDF'i döndür
