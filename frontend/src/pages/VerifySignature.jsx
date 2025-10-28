@@ -16,6 +16,28 @@ export default function VerifySignature() {
   const [fromQR, setFromQR] = useState(false)
   const [pdfFile, setPdfFile] = useState(null)
   const [pdfVerificationResult, setPdfVerificationResult] = useState(null)
+  const [mutabakatInfo, setMutabakatInfo] = useState(null)
+  const [mutabakatLogs, setMutabakatLogs] = useState([])
+  const [loadingInfo, setLoadingInfo] = useState(false)
+
+  // Mutabakat bilgilerini getir
+  const fetchMutabakatInfo = async (mutabakatNo) => {
+    if (!mutabakatNo) return
+    
+    setLoadingInfo(true)
+    try {
+      const response = await axios.get(`/api/public/mutabakat/verify/${mutabakatNo}`)
+      if (response.data.success) {
+        setMutabakatInfo(response.data.mutabakat)
+        setMutabakatLogs(response.data.logs)
+      }
+    } catch (error) {
+      console.error('Mutabakat bilgileri alınamadı:', error)
+      // Hata gösterme - public sayfada zorunlu değil
+    } finally {
+      setLoadingInfo(false)
+    }
+  }
 
   // URL parametrelerinden değerleri al (QR kod için)
   useEffect(() => {
@@ -31,6 +53,9 @@ export default function VerifySignature() {
       toast.info('QR kod ile mutabakat no yüklendi! PDF dosyasını yükleyerek doğrulayın.', { icon: '📱' })
       // QR kod'dan geldiğinde direkt PDF doğrulama tab'ına geç
       setActiveTab('pdf')
+      
+      // Mutabakat bilgilerini çek
+      fetchMutabakatInfo(qrMutabakatNo)
     }
     
     // Eski format (query params ile dijital imza varsa)
@@ -40,6 +65,9 @@ export default function VerifySignature() {
       setFromQR(true)
       setActiveTab('manuel')
       toast.info('QR kod ile bilgiler yüklendi!', { icon: '📱' })
+      
+      // Mutabakat bilgilerini çek
+      fetchMutabakatInfo(qrMutabakatNo)
       
       // Otomatik doğrulama (opsiyonel)
       setTimeout(() => {
@@ -168,6 +196,139 @@ export default function VerifySignature() {
       </div>
 
       <div className="verify-content">
+        {/* Mutabakat Özet Bilgileri */}
+        {mutabakatInfo && (
+          <div className="mutabakat-info-card">
+            <div className="info-header">
+              <h3>📋 Mutabakat Özet Bilgileri</h3>
+              <span className={`status-badge status-${mutabakatInfo.durum}`}>
+                {mutabakatInfo.durum}
+              </span>
+            </div>
+            
+            <div className="info-grid">
+              <div className="info-item">
+                <span className="info-label">Mutabakat No:</span>
+                <span className="info-value">{mutabakatInfo.mutabakat_no}</span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">Şirket:</span>
+                <span className="info-value">{mutabakatInfo.company_name}</span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">VKN:</span>
+                <span className="info-value">{mutabakatInfo.company_vkn}</span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">Dönem:</span>
+                <span className="info-value">
+                  {new Date(mutabakatInfo.donem_baslangic).toLocaleDateString('tr-TR')} - {new Date(mutabakatInfo.donem_bitis).toLocaleDateString('tr-TR')}
+                </span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">Toplam Borç:</span>
+                <span className="info-value amount-red">
+                  {mutabakatInfo.toplam_borc?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                </span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">Toplam Alacak:</span>
+                <span className="info-value amount-green">
+                  {mutabakatInfo.toplam_alacak?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                </span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">Bakiye:</span>
+                <span className={`info-value amount-${mutabakatInfo.bakiye >= 0 ? 'green' : 'red'}`}>
+                  {mutabakatInfo.bakiye?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                </span>
+              </div>
+              
+              <div className="info-item">
+                <span className="info-label">Toplam Bayi:</span>
+                <span className="info-value">{mutabakatInfo.toplam_bayi_sayisi}</span>
+              </div>
+              
+              <div className="info-item full-width">
+                <span className="info-label">Gönderen:</span>
+                <span className="info-value">{mutabakatInfo.sender_name}</span>
+              </div>
+              
+              <div className="info-item full-width">
+                <span className="info-label">Alıcı:</span>
+                <span className="info-value">{mutabakatInfo.receiver_name} ({mutabakatInfo.receiver_vkn})</span>
+              </div>
+              
+              {mutabakatInfo.aciklama && (
+                <div className="info-item full-width">
+                  <span className="info-label">Açıklama:</span>
+                  <span className="info-value">{mutabakatInfo.aciklama}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="compare-message">
+              <FaSearch />
+              <strong>Lütfen PDF'deki bilgilerle yukarıdaki bilgileri karşılaştırın!</strong>
+              <p>PDF ile veritabanındaki bilgiler aynı olmalıdır.</p>
+            </div>
+          </div>
+        )}
+
+        {/* İşlem Logları */}
+        {mutabakatLogs && mutabakatLogs.length > 0 && (
+          <div className="logs-card">
+            <h3>📝 İşlem Geçmişi ve Dijital Deliller</h3>
+            <div className="logs-timeline">
+              {mutabakatLogs.map((log, index) => (
+                <div key={index} className="log-item">
+                  <div className="log-icon">
+                    {log.action.includes('OLUSTUR') && '📝'}
+                    {log.action.includes('ONAYLA') && '✅'}
+                    {log.action.includes('REDDET') && '❌'}
+                    {log.action.includes('GONDER') && '📤'}
+                    {!log.action.includes('OLUSTUR') && !log.action.includes('ONAYLA') && !log.action.includes('REDDET') && !log.action.includes('GONDER') && '📋'}
+                  </div>
+                  <div className="log-content">
+                    <div className="log-header">
+                      <strong>{log.description}</strong>
+                      <span className="log-time">
+                        {new Date(log.created_at).toLocaleString('tr-TR')}
+                      </span>
+                    </div>
+                    <div className="log-details">
+                      <span className="log-user">👤 {log.full_name} (@{log.username})</span>
+                      <span className="log-ip">🌐 IP: {log.ip_address}</span>
+                      {log.isp && <span className="log-isp">📡 ISP: {log.isp}</span>}
+                      {log.city && log.country && (
+                        <span className="log-location">📍 {log.city}, {log.country}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="logs-info">
+              <FaShieldAlt />
+              <small>Bu bilgiler değiştirilemez delillerdir ve yasal süreçlerde kullanılabilir.</small>
+            </div>
+          </div>
+        )}
+
+        {/* Loading durumu */}
+        {loadingInfo && (
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <p>Mutabakat bilgileri yükleniyor...</p>
+          </div>
+        )}
+
         {/* Tab Seçim Butonları */}
         <div className="verification-tabs">
           <button

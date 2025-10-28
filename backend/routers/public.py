@@ -4,14 +4,14 @@ Public API endpoints (authentication gerektirmez)
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from backend.database import get_db
-from backend.models import Mutabakat, MutabakatDurumu, Company
+from backend.models import Mutabakat, MutabakatDurumu, Company, ActivityLog
 from backend.schemas import MutabakatResponse
 from backend.utils.tokens import verify_approval_token, mark_token_as_used
 from backend.logger import ActivityLogger
 from backend.sms import sms_service
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict
 import requests
 
 def get_real_ip(request: Request) -> str:
@@ -240,4 +240,83 @@ def approve_or_reject_by_token(
             status_code=400,
             detail="Geçersiz aksiyon. 'approve' veya 'reject' olmalıdır."
         )
+
+
+@router.get("/mutabakat/verify/{mutabakat_no}")
+def verify_mutabakat_by_no(
+    mutabakat_no: str,
+    db: Session = Depends(get_db)
+) -> Dict:
+    """
+    Mutabakat no ile mutabakat bilgilerini getir (public endpoint - QR kod için)
+    
+    Args:
+        mutabakat_no: Mutabakat numarası
+        db: Database session
+        
+    Returns:
+        dict: Mutabakat özet bilgileri ve işlem logları
+    """
+    # Mutabakatı bul
+    mutabakat = db.query(Mutabakat).filter(
+        Mutabakat.mutabakat_no == mutabakat_no
+    ).first()
+    
+    if not mutabakat:
+        raise HTTPException(
+            status_code=404,
+            detail="Mutabakat bulunamadı"
+        )
+    
+    # Şirket bilgisi
+    company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
+    
+    # Activity logları - mutabakat oluşturma ve onaylama/red logları
+    logs = db.query(ActivityLog).filter(
+        ActivityLog.description.like(f"%{mutabakat_no}%")
+    ).order_by(ActivityLog.created_at.asc()).all()
+    
+    # Logları formatla
+    formatted_logs = []
+    for log in logs:
+        formatted_logs.append({
+            "action": log.action,
+            "description": log.description,
+            "user_id": log.user_id,
+            "username": log.user.username if log.user else "Sistem",
+            "full_name": log.user.full_name if log.user else "Sistem",
+            "ip_address": log.ip_address,
+            "isp": log.isp,
+            "city": log.city,
+            "country": log.country,
+            "created_at": log.created_at.isoformat() if log.created_at else None
+        })
+    
+    # Mutabakat özeti
+    summary = {
+        "mutabakat_no": mutabakat.mutabakat_no,
+        "company_name": company.company_name if company else "Bilinmiyor",
+        "company_vkn": company.vkn if company else None,
+        "durum": mutabakat.durum.value if mutabakat.durum else "Bilinmiyor",
+        "donem_baslangic": mutabakat.donem_baslangic.isoformat() if mutabakat.donem_baslangic else None,
+        "donem_bitis": mutabakat.donem_bitis.isoformat() if mutabakat.donem_bitis else None,
+        "toplam_borc": float(mutabakat.toplam_borc) if mutabakat.toplam_borc else 0.0,
+        "toplam_alacak": float(mutabakat.toplam_alacak) if mutabakat.toplam_alacak else 0.0,
+        "bakiye": float(mutabakat.bakiye) if mutabakat.bakiye else 0.0,
+        "toplam_bayi_sayisi": mutabakat.toplam_bayi_sayisi or 0,
+        "sender_name": mutabakat.sender.company_name or mutabakat.sender.full_name if mutabakat.sender else "Bilinmiyor",
+        "receiver_name": mutabakat.receiver.company_name or mutabakat.receiver.full_name if mutabakat.receiver else "Bilinmiyor",
+        "receiver_vkn": mutabakat.receiver_vkn,
+        "created_at": mutabakat.created_at.isoformat() if mutabakat.created_at else None,
+        "onay_tarihi": mutabakat.onay_tarihi.isoformat() if mutabakat.onay_tarihi else None,
+        "red_tarihi": mutabakat.red_tarihi.isoformat() if mutabakat.red_tarihi else None,
+        "red_nedeni": mutabakat.red_nedeni,
+        "aciklama": mutabakat.aciklama
+    }
+    
+    return {
+        "success": True,
+        "mutabakat": summary,
+        "logs": formatted_logs
+    }
 

@@ -654,3 +654,318 @@
   color: #742a2a;
 }
 
+/* Mutabakat Info Card */
+.mutabakat-info-card {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border: 2px solid #cbd5e0;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  animation: slideInUp 0.5s ease-out;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #cbd5e0;
+}
+
+.info-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.5rem;
+}
+
+.status-badge {
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.status-badge.status-gonderildi {
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+  color: white;
+}
+
+.status-badge.status-onaylandi {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.status-badge.status-reddedildi {
+  background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+  color: white;
+}
+
+.status-badge.status-taslak {
+  background: linear-gradient(135deg, #ed8936 0%, #c05621 100%);
+  color: white;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.info-value.amount-red {
+  color: #e53e3e;
+}
+
+.info-value.amount-green {
+  color: #38a169;
+}
+
+.compare-message {
+  background: linear-gradient(135deg, #fef5e7 0%, #f9e79f 100%);
+  border: 2px solid #f39c12;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.compare-message svg {
+  font-size: 2rem;
+  color: #f39c12;
+}
+
+.compare-message strong {
+  font-size: 1.2rem;
+  color: #d35400;
+}
+
+.compare-message p {
+  margin: 0;
+  color: #8e44ad;
+  font-weight: 600;
+}
+
+/* Logs Card */
+.logs-card {
+  background: white;
+  border: 2px solid #cbd5e0;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  animation: slideInUp 0.6s ease-out;
+}
+
+.logs-card h3 {
+  margin: 0 0 1.5rem;
+  color: #2d3748;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #cbd5e0;
+  padding-bottom: 1rem;
+}
+
+.logs-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.log-item {
+  display: flex;
+  gap: 1rem;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 5px solid #3182ce;
+  transition: all 0.3s ease;
+}
+
+.log-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.log-icon {
+  font-size: 2rem;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.log-content {
+  flex: 1;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.log-header strong {
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.log-time {
+  color: #718096;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #cbd5e0;
+}
+
+.log-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.log-user,
+.log-ip,
+.log-isp,
+.log-location {
+  color: #4a5568;
+  background: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+}
+
+.logs-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logs-info svg {
+  font-size: 1.5rem;
+  color: #319795;
+}
+
+.logs-info small {
+  color: #234e52;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading Box */
+.loading-box {
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  border: 2px solid #4fd1c5;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.loading-box .spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #e2e8f0;
+  border-top-color: #319795;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+.loading-box p {
+  margin: 0.5rem 0 0;
+  color: #234e52;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.loading-box small {
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mutabakat-info-card,
+  .logs-card {
+    padding: 1.5rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .log-item {
+    padding: 1rem;
+  }
+
+  .log-header {
+    flex-direction: column;
+  }
+
+  .log-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
