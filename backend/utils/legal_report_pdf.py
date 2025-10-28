@@ -34,20 +34,32 @@ def register_turkish_fonts():
         return
     
     try:
-        # Windows için Arial font'u kullan (Türkçe Unicode destekli)
-        arial_path = "C:/Windows/Fonts/arial.ttf"
-        arial_bold_path = "C:/Windows/Fonts/arialbd.ttf"
-        arial_italic_path = "C:/Windows/Fonts/ariali.ttf"
+        # Font yolları (Docker container için)
+        # Önce fonts/ klasöründe ara, yoksa sistem fontlarını kullan
+        font_dir = "fonts"
+        
+        # Liberation Sans (Arial alternatifi, Türkçe Unicode destekli)
+        arial_path = os.path.join(font_dir, "LiberationSans-Regular.ttf")
+        arial_bold_path = os.path.join(font_dir, "LiberationSans-Bold.ttf")
+        arial_italic_path = os.path.join(font_dir, "LiberationSans-Italic.ttf")
+        
+        # Fallback: Windows font yolları (local development için)
+        if not os.path.exists(arial_path):
+            arial_path = "C:/Windows/Fonts/arial.ttf"
+        if not os.path.exists(arial_bold_path):
+            arial_bold_path = "C:/Windows/Fonts/arialbd.ttf"
+        if not os.path.exists(arial_italic_path):
+            arial_italic_path = "C:/Windows/Fonts/ariali.ttf"
         
         if os.path.exists(arial_path):
             pdfmetrics.registerFont(TTFont('TurkceArial', arial_path, 'UTF-8'))
-            print("[YASAL PDF] TurkceArial font yüklendi (UTF-8)")
+            print(f"[YASAL PDF] TurkceArial font yüklendi: {arial_path}")
         if os.path.exists(arial_bold_path):
             pdfmetrics.registerFont(TTFont('TurkceArial-Bold', arial_bold_path, 'UTF-8'))
-            print("[YASAL PDF] TurkceArial-Bold font yüklendi")
+            print(f"[YASAL PDF] TurkceArial-Bold font yüklendi: {arial_bold_path}")
         if os.path.exists(arial_italic_path):
             pdfmetrics.registerFont(TTFont('TurkceArial-Italic', arial_italic_path, 'UTF-8'))
-            print("[YASAL PDF] TurkceArial-Italic font yüklendi")
+            print(f"[YASAL PDF] TurkceArial-Italic font yüklendi: {arial_italic_path}")
         
         FONTS_REGISTERED = True
         return True
