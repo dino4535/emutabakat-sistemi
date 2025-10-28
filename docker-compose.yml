@@ -31,6 +31,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - FRONTEND_URL=https://mutabakat.dinogida.com.tr  # QR kod için
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-emutabakat2025}
@@ -71,6 +72,7 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
+      - FRONTEND_URL=https://mutabakat.dinogida.com.tr  # QR kod için
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-emutabakat2025}
@@ -104,6 +106,7 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
+      - FRONTEND_URL=https://mutabakat.dinogida.com.tr  # QR kod için
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-emutabakat2025}
