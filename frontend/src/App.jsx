@@ -92,6 +92,7 @@ function App() {
         {/* Public Routes - Authentication gerektirmez */}
         <Route path="/mutabakat/onay/:token" element={<PublicApproval />} />
         <Route path="/mutabakat/onay/basarili" element={<ApprovalSuccess />} />
+        <Route path="/verify/mutabakat/:mutabakatNo" element={<VerifySignature />} />
         
         {/* Auth Routes */}
         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
@@ -116,7 +117,6 @@ function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="legal-reports" element={<LegalReports />} />
           <Route path="verify" element={<VerifySignature />} />
-          <Route path="verify/mutabakat/:mutabakatNo" element={<VerifySignature />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="companies" element={<CompanyManagement />} />
           <Route path="profile" element={<Profile />} />

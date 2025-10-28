@@ -142,7 +142,15 @@ export default function VerifySignature() {
   }
 
   return (
-    <div className="verify-signature">
+    <div className="verify-signature public-page">
+      {/* Public Sayfalar için Logo/Header */}
+      <div className="public-header">
+        <div className="logo-container">
+          <img src="/dino-logo.png" alt="Logo" className="company-logo" />
+          <h2>E-Mutabakat Sistemi</h2>
+        </div>
+      </div>
+
       <div className="verify-header">
         <div className="header-icon">
           <FaShieldAlt />
@@ -153,7 +161,7 @@ export default function VerifySignature() {
         </h1>
         <p className="subtitle">
           {fromQR 
-            ? "QR kod ile belge bilgileri otomatik yüklendi. Doğrulama işlemi devam ediyor..." 
+            ? "QR kod ile belge bilgileri otomatik yüklendi. PDF dosyasını yükleyerek doğrulayın." 
             : "Mutabakat belgelerinin dijital imzasını doğrulayarak belgenin orijinalliğini ve değiştirilmediğini matematiksel olarak kanıtlayabilirsiniz."
           }
         </p>
