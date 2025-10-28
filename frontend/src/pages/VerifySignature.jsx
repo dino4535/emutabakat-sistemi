@@ -176,11 +176,12 @@ export default function VerifySignature() {
         <div className="logo-container">
           {mutabakatInfo && mutabakatInfo.company_logo ? (
             <img 
-              src={mutabakatInfo.company_logo} 
+              src={`/${mutabakatInfo.company_logo}`}
               alt={mutabakatInfo.company_name} 
               className="company-logo" 
               onError={(e) => {
                 // Logo yüklenemezse default logo göster
+                console.error('Logo yüklenemedi:', mutabakatInfo.company_logo)
                 e.target.src = '/dino-logo.png'
               }}
             />
