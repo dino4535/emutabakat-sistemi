@@ -10,34 +10,8 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Veritabanı bağlantı bilgileri
-DB_SERVER = os.getenv("DB_SERVER")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_DRIVER = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
-
-# SQL Server bağlantı URL'si - TCP/IP ile
-# Port ekleyelim ve TrustServerCertificate=yes ekleyelim
-from urllib.parse import quote_plus
-
-# Şifreyi URL-safe encode edelim
-password_encoded = quote_plus(DB_PASSWORD)
-
-# Connection string parametreleri
-connection_params = [
-    f"DRIVER={{{DB_DRIVER}}}",
-    f"SERVER={DB_SERVER},1433",  # Port ekle
-    f"DATABASE={DB_NAME}",
-    f"UID={DB_USER}",
-    f"PWD={DB_PASSWORD}",
-    "TrustServerCertificate=yes",
-    "Connection Timeout=60",  # Timeout artırıldı (30 -> 60)
-    "Encrypt=no"  # SSL şifreleme devre dışı (hız için)
-]
-
-connection_string = ";".join(connection_params)
-DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={quote_plus(connection_string)}"
+# Veritabanı bağlantı URL'si environment variable'dan al
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 try:
     engine = create_engine(
