@@ -906,6 +906,33 @@
   }
 }
 
+/* QR Info Card */
+.qr-info {
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  border: 2px solid #38b2ac;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.qr-info h3 {
+  color: #234e52;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.qr-info p {
+  color: #2c5282;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.qr-info .success-box {
+  margin: 0;
+}
+
 /* Loading Box */
 .loading-box {
   background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);

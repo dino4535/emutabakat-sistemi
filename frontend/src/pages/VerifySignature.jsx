@@ -329,21 +329,37 @@ export default function VerifySignature() {
           </div>
         )}
 
-        {/* Tab Seçim Butonları */}
-        <div className="verification-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'manuel' ? 'active' : ''}`}
-            onClick={() => setActiveTab('manuel')}
-          >
-            <FaSearch /> Manuel Doğrulama
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'pdf' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pdf')}
-          >
-            <FaFileAlt /> PDF Dosyası ile Doğrulama (Önerilen)
-          </button>
-        </div>
+        {/* QR kod'dan geliyorsa doğrulama formlarını gösterme */}
+        {fromQR && mutabakatInfo && (
+          <div className="info-card qr-info">
+            <h3>✅ Mutabakat Bilgileri Doğrulandı</h3>
+            <p>
+              Bu sayfa QR kod üzerinden açıldı. Mutabakat bilgileri yukarıda görüntülenmektedir.
+              Lütfen PDF'deki bilgilerle yukarıdaki bilgileri karşılaştırın.
+            </p>
+            <div className="success-box">
+              🔒 <strong>Güvenlik:</strong> Tüm işlem logları ve dijital deliller yukarıda listelenmiştir.
+            </div>
+          </div>
+        )}
+
+        {/* Tab Seçim Butonları - Sadece QR'dan gelmiyorsa göster */}
+        {!fromQR && (
+          <>
+            <div className="verification-tabs">
+              <button
+                className={`tab-btn ${activeTab === 'manuel' ? 'active' : ''}`}
+                onClick={() => setActiveTab('manuel')}
+              >
+                <FaSearch /> Manuel Doğrulama
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'pdf' ? 'active' : ''}`}
+                onClick={() => setActiveTab('pdf')}
+              >
+                <FaFileAlt /> PDF Dosyası ile Doğrulama (Önerilen)
+              </button>
+            </div>
 
         {/* Manuel Doğrulama Tab */}
         {activeTab === 'manuel' && (
@@ -717,6 +733,8 @@ export default function VerifySignature() {
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   )
