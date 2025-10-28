@@ -84,11 +84,16 @@ class GoldSMS:
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('status') == 'ok' and result.get('result', 0) > 1:
-                    logger.info(f"GoldSMS kredi: {result.get('result')} SMS")
-                    return True
+                if result.get('status') == 'ok':
+                    credit = int(result.get('result', 0))
+                    if credit > 1:
+                        logger.info(f"GoldSMS kredi: {credit} SMS")
+                        return True
+                    else:
+                        logger.error(f"GoldSMS kredi yetersiz: {credit}")
+                        return False
                 else:
-                    logger.error(f"GoldSMS kredi yetersiz: {result}")
+                    logger.error(f"GoldSMS kredi kontrolu basarisiz: {result}")
                     return False
             else:
                 logger.error(f"GoldSMS kredi kontrol hatası: {response.status_code}")
