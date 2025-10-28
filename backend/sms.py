@@ -60,6 +60,43 @@ class GoldSMS:
         
         return None
     
+    def check_credit(self) -> bool:
+        """
+        GoldSMS kredi kontrolü
+        
+        Returns:
+            bool: Kredi varsa True
+        """
+        try:
+            credit_url = "http://apiv3.goldmesaj.net/api/kredi/get"
+            payload = {
+                'username': self.username,
+                'password': self.password
+            }
+            
+            response = requests.post(
+                credit_url,
+                json=payload,
+                headers={'Content-Type': 'application/json'},
+                timeout=10,
+                verify=False
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('status') == 'ok' and result.get('result', 0) > 1:
+                    logger.info(f"GoldSMS kredi: {result.get('result')} SMS")
+                    return True
+                else:
+                    logger.error(f"GoldSMS kredi yetersiz: {result}")
+                    return False
+            else:
+                logger.error(f"GoldSMS kredi kontrol hatası: {response.status_code}")
+                return False
+        except Exception as e:
+            logger.error(f"GoldSMS kredi kontrol hatası: {e}")
+            return False
+    
     def send_sms(self, phone: str, message: str) -> bool:
         """
         SMS gönder
@@ -72,6 +109,11 @@ class GoldSMS:
             bool: Başarılı ise True
         """
         try:
+            # Önce kredi kontrolü yap
+            if not self.check_credit():
+                logger.error("GoldSMS kredisi yetersiz veya erişilemiyor")
+                return False
+            
             # Telefon numarasını formatla
             formatted_phone = self.format_phone(phone)
             
