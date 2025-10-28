@@ -116,6 +116,7 @@ function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="legal-reports" element={<LegalReports />} />
           <Route path="verify" element={<VerifySignature />} />
+          <Route path="verify/mutabakat/:mutabakatNo" element={<VerifySignature />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="companies" element={<CompanyManagement />} />
           <Route path="profile" element={<Profile />} />

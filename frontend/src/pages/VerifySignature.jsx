@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -8,6 +8,7 @@ import './VerifySignature.css'
 
 export default function VerifySignature() {
   const location = useLocation()
+  const { mutabakatNo: urlMutabakatNo } = useParams() // URL'den mutabakat no al
   const [activeTab, setActiveTab] = useState('manuel') // 'manuel' veya 'pdf'
   const [mutabakatNo, setMutabakatNo] = useState('')
   const [dijitalImza, setDijitalImza] = useState('')
@@ -19,13 +20,25 @@ export default function VerifySignature() {
   // URL parametrelerinden değerleri al (QR kod için)
   useEffect(() => {
     const params = new URLSearchParams(location.search)
-    const qrMutabakatNo = params.get('mutabakat_no')
+    const qrMutabakatNo = urlMutabakatNo || params.get('mutabakat_no') // Path param veya query param
     const qrDijitalImza = params.get('dijital_imza')
+    const qrHash = params.get('hash')
     
+    // QR kod'dan geliyorsa (path param varsa)
+    if (qrMutabakatNo) {
+      setMutabakatNo(qrMutabakatNo)
+      setFromQR(true)
+      toast.info('QR kod ile mutabakat no yüklendi! PDF dosyasını yükleyerek doğrulayın.', { icon: '📱' })
+      // QR kod'dan geldiğinde direkt PDF doğrulama tab'ına geç
+      setActiveTab('pdf')
+    }
+    
+    // Eski format (query params ile dijital imza varsa)
     if (qrMutabakatNo && qrDijitalImza) {
       setMutabakatNo(qrMutabakatNo)
       setDijitalImza(qrDijitalImza)
       setFromQR(true)
+      setActiveTab('manuel')
       toast.info('QR kod ile bilgiler yüklendi!', { icon: '📱' })
       
       // Otomatik doğrulama (opsiyonel)
@@ -36,7 +49,7 @@ export default function VerifySignature() {
         })
       }, 500)
     }
-  }, [location.search])
+  }, [location.search, urlMutabakatNo])
 
   const verifyMutation = useMutation({
     mutationFn: async (data) => {
