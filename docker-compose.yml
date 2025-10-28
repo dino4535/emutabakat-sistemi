@@ -24,6 +24,8 @@ services:
       dockerfile: backend/Dockerfile
     container_name: emutabakat-backend
     restart: unless-stopped
+    ports:
+      - "8000:8000"  # Nginx için expose
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
