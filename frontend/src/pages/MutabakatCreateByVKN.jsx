@@ -243,11 +243,20 @@ export default function MutabakatCreateByVKN() {
                   </tbody>
                   <tfoot>
                     <tr className="total-row">
-                      <td colSpan="2"><strong>TOPLAM</strong></td>
-                      <td></td>
-                      <td><strong>{toplamBorc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong></td>
-                      <td><strong>{toplamAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong></td>
-                      <td className={toplamBakiye > 0 ? 'alacak' : toplamBakiye < 0 ? 'borc' : ''}>
+                      <td colSpan="2" style={{ textAlign: 'left', paddingLeft: '12px' }}>
+                        <strong>TOPLAM</strong>
+                      </td>
+                      <td style={{ textAlign: 'right' }}></td>
+                      <td style={{ textAlign: 'right', color: '#dc3545', fontWeight: 800 }}>
+                        <strong>{toplamBorc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong>
+                      </td>
+                      <td style={{ textAlign: 'right', color: '#28a745', fontWeight: 800 }}>
+                        <strong>{toplamAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong>
+                      </td>
+                      <td 
+                        className={toplamBakiye > 0 ? 'alacak' : toplamBakiye < 0 ? 'borc' : ''}
+                        style={{ textAlign: 'right', fontWeight: 800 }}
+                      >
                         <strong>{toplamBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong>
                       </td>
                     </tr>
