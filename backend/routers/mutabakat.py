@@ -950,6 +950,99 @@ def delete_mutabakat(
     
     return None
 
+class ManualMutabakatCreateRequest(BaseModel):
+    receiver_vkn: str
+    donem_baslangic: str
+    donem_bitis: str
+    toplam_borc: float
+    toplam_alacak: float
+    aciklama: Optional[str] = None
+    bayiler: Optional[List[dict]] = []
+
+@router.post("/create-by-vkn-manual", response_model=MutabakatResponse, status_code=status.HTTP_201_CREATED)
+def create_mutabakat_by_vkn_manual(
+    payload: ManualMutabakatCreateRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    VKN bazlı manuel mutabakat oluştur - Her bayi için borç/alacak girilir
+    """
+    from datetime import datetime
+    
+    # VKN + company_id ile kullanıcıyı bul
+    receiver = db.query(User).filter(
+        User.vkn_tckn == payload.receiver_vkn,
+        User.company_id == current_user.company_id
+    ).first()
+    
+    if not receiver:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bu VKN'ye ait kullanıcı bulunamadı: {payload.receiver_vkn}"
+        )
+    
+    if receiver.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kendinize mutabakat gönderemezsiniz"
+        )
+    
+    # Tarihleri parse et
+    donem_baslangic_dt = datetime.fromisoformat(payload.donem_baslangic.replace('Z', '+00:00'))
+    donem_bitis_dt = datetime.fromisoformat(payload.donem_bitis.replace('Z', '+00:00'))
+    
+    # Bakiye hesapla
+    bakiye = payload.toplam_alacak - payload.toplam_borc
+    
+    # Mutabakat oluştur
+    db_mutabakat = Mutabakat(
+        company_id=current_user.company_id,
+        mutabakat_no=generate_mutabakat_no(),
+        sender_id=current_user.id,
+        receiver_id=receiver.id,
+        receiver_vkn=payload.receiver_vkn,
+        donem_baslangic=donem_baslangic_dt,
+        donem_bitis=donem_bitis_dt,
+        toplam_borc=payload.toplam_borc,
+        toplam_alacak=payload.toplam_alacak,
+        bakiye=bakiye,
+        toplam_bayi_sayisi=len(payload.bayiler) if payload.bayiler else 0,
+        aciklama=payload.aciklama or f"{receiver.company_name or payload.receiver_vkn} - Manuel Mutabakat",
+        durum=MutabakatDurumu.TASLAK
+    )
+    
+    db.add(db_mutabakat)
+    db.flush()  # ID'yi al
+    
+    # Bayi detaylarını ekle
+    if payload.bayiler:
+        for bayi_data in payload.bayiler:
+            bayi = db.query(Bayi).filter(Bayi.id == bayi_data['bayi_id']).first()
+            if bayi:
+                bayi_detay = MutabakatBayiDetay(
+                    mutabakat_id=db_mutabakat.id,
+                    bayi_kodu=bayi.bayi_kodu,
+                    bayi_adi=bayi.bayi_adi,
+                    bakiye=bayi_data.get('alacak', 0) - bayi_data.get('borc', 0)
+                )
+                db.add(bayi_detay)
+    
+    db.commit()
+    db.refresh(db_mutabakat)
+    
+    # Activity log
+    ip_info = get_ip_info()
+    ActivityLogger.log_activity(
+        db=db,
+        user_id=current_user.id,
+        action="MUTABAKAT_OLUSTUR",
+        description=f"Manuel mutabakat oluşturuldu: {db_mutabakat.mutabakat_no} (VKN: {payload.receiver_vkn})",
+        ip_info=ip_info
+    )
+    
+    return db_mutabakat
+
 @router.post("/create-by-vkn", response_model=MutabakatResponse, status_code=status.HTTP_201_CREATED)
 def create_mutabakat_by_vkn(
     vkn_tckn: str,

@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import MutabakatList from './pages/MutabakatList'
 import MutabakatCreate from './pages/MutabakatCreate'
 import MutabakatCreateVKN from './pages/MutabakatCreateVKN'
+import MutabakatCreateByVKN from './pages/MutabakatCreateByVKN'
 import MutabakatDetail from './pages/MutabakatDetail'
 import BulkMutabakat from './pages/BulkMutabakat'
 import BayiBulkUpload from './pages/BayiBulkUpload'
@@ -110,7 +111,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="mutabakat" element={<MutabakatList />} />
-          <Route path="mutabakat/new" element={<MutabakatCreateVKN />} />
+          <Route path="mutabakat/new" element={<MutabakatCreateByVKN />} />
           <Route path="mutabakat/bulk" element={<BulkMutabakat />} />
           <Route path="mutabakat/:id" element={<MutabakatDetail />} />
           <Route path="bayi/bulk" element={<BayiBulkUpload />} />
