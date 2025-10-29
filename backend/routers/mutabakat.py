@@ -964,6 +964,7 @@ def delete_mutabakat(
 @router.post("/create-by-vkn-manual", response_model=MutabakatResponse, status_code=status.HTTP_201_CREATED)
 def create_mutabakat_by_vkn_manual(
     payload: ManualMutabakatCreateRequest,
+    request: Request,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -1034,7 +1035,7 @@ def create_mutabakat_by_vkn_manual(
     db.refresh(db_mutabakat)
     
     # Activity log
-    ip_info = get_ip_info()
+    ip_info = get_real_ip_with_isp(request)
     ActivityLogger.log_activity(
         db=db,
         user_id=current_user.id,
