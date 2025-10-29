@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
-from typing import List
+from typing import List, Optional
 from datetime import datetime
+from pydantic import BaseModel
 from backend.database import get_db
 from backend.models import User, Mutabakat, MutabakatItem, MutabakatDurumu, UserRole, Bayi, MutabakatBayiDetay, Company
 from backend.schemas import (
@@ -106,6 +107,16 @@ def get_real_ip(request: Request) -> str:
     return get_real_ip_with_isp(request)["ip"]
 
 router = APIRouter(prefix="/api/mutabakat", tags=["Mutabakat"])
+
+# Pydantic Models
+class ManualMutabakatCreateRequest(BaseModel):
+    receiver_vkn: str
+    donem_baslangic: str
+    donem_bitis: str
+    toplam_borc: float
+    toplam_alacak: float
+    aciklama: Optional[str] = None
+    bayiler: Optional[List[dict]] = []
 
 def generate_mutabakat_no() -> str:
     """Benzersiz mutabakat numarası oluştur"""
@@ -949,15 +960,6 @@ def delete_mutabakat(
     db.commit()
     
     return None
-
-class ManualMutabakatCreateRequest(BaseModel):
-    receiver_vkn: str
-    donem_baslangic: str
-    donem_bitis: str
-    toplam_borc: float
-    toplam_alacak: float
-    aciklama: Optional[str] = None
-    bayiler: Optional[List[dict]] = []
 
 @router.post("/create-by-vkn-manual", response_model=MutabakatResponse, status_code=status.HTTP_201_CREATED)
 def create_mutabakat_by_vkn_manual(
