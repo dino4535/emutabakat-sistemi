@@ -770,6 +770,80 @@
   margin-top: 16px;
 }
 
+/* Bayiler Toplamlar Kutusu */
+.bayiler-totals-box {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.total-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.total-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.total-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.total-value {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.borc-color {
+  color: #dc3545 !important;
+}
+
+.alacak-color {
+  color: #28a745 !important;
+}
+
+.net-bakiye-item {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.net-bakiye-item .total-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.net-bakiye-item .total-value {
+  color: white !important;
+  font-size: 22px;
+}
+
+@media (max-width: 1024px) {
+  .totals-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .bayiler-table {
   width: 100%;
   min-width: 1100px;

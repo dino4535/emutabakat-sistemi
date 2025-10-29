@@ -241,27 +241,31 @@ export default function MutabakatCreateByVKN() {
                       )
                     })}
                   </tbody>
-                  <tfoot>
-                    <tr className="total-row">
-                      <td colSpan="2" style={{ textAlign: 'left', paddingLeft: '12px' }}>
-                        <strong>TOPLAM</strong>
-                      </td>
-                      <td style={{ textAlign: 'right' }}></td>
-                      <td style={{ textAlign: 'right', color: '#dc3545', fontWeight: 800 }}>
-                        <strong>{toplamBorc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong>
-                      </td>
-                      <td style={{ textAlign: 'right', color: '#28a745', fontWeight: 800 }}>
-                        <strong>{toplamAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong>
-                      </td>
-                      <td 
-                        className={toplamBakiye > 0 ? 'alacak' : toplamBakiye < 0 ? 'borc' : ''}
-                        style={{ textAlign: 'right', fontWeight: 800 }}
-                      >
-                        <strong>{toplamBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong>
-                      </td>
-                    </tr>
-                  </tfoot>
                 </table>
+              </div>
+
+              {/* Toplamlar Kutusu */}
+              <div className="bayiler-totals-box">
+                <div className="totals-grid">
+                  <div className="total-item">
+                    <span className="total-label">Toplam Borç:</span>
+                    <span className="total-value borc-color">
+                      {toplamBorc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                    </span>
+                  </div>
+                  <div className="total-item">
+                    <span className="total-label">Toplam Alacak:</span>
+                    <span className="total-value alacak-color">
+                      {toplamAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                    </span>
+                  </div>
+                  <div className="total-item net-bakiye-item">
+                    <span className="total-label">Net Bakiye:</span>
+                    <span className={`total-value net-bakiye-value ${toplamBakiye > 0 ? 'alacak-color' : toplamBakiye < 0 ? 'borc-color' : ''}`}>
+                      {toplamBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
