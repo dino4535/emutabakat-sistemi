@@ -773,7 +773,7 @@
 .bayiler-table {
   width: 100%;
   min-width: 1100px;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   background: white;
@@ -808,7 +808,9 @@
 /* Bayi kodu sütunu - ÇOK DAR */
 .bayiler-table th:first-child,
 .bayiler-table td:first-child {
-  width: 8%;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
   padding-left: 12px;
   padding-right: 8px;
 }
@@ -816,7 +818,7 @@
 /* Bayi adı sütunu - geniş, tam görünsün */
 .bayiler-table th:nth-child(2),
 .bayiler-table td:nth-child(2) {
-  width: 40%;
+  min-width: 350px;
   white-space: normal;
   word-wrap: break-word;
   padding-right: 16px;
@@ -826,28 +828,32 @@
 .bayiler-table th:nth-child(3),
 .bayiler-table td:nth-child(3) {
   text-align: right;
-  width: 13%;
+  width: 150px;
+  min-width: 150px;
 }
 
 /* Borç input */
 .bayiler-table th:nth-child(4),
 .bayiler-table td:nth-child(4) {
   text-align: right;
-  width: 13%;
+  width: 150px;
+  min-width: 150px;
 }
 
 /* Alacak input */
 .bayiler-table th:nth-child(5),
 .bayiler-table td:nth-child(5) {
   text-align: right;
-  width: 13%;
+  width: 150px;
+  min-width: 150px;
 }
 
 /* Net Bakiye */
 .bayiler-table th:nth-child(6),
 .bayiler-table td:nth-child(6) {
   text-align: right;
-  width: 13%;
+  width: 150px;
+  min-width: 150px;
 }
 
 .bayiler-table tbody tr {
@@ -933,12 +939,16 @@
   text-align: left;
   font-weight: 800;
   padding-left: 12px;
+  width: 450px !important;
+  min-width: 450px !important;
 }
 
 /* Mevcut Bakiye sütunu - boş (2. td) */
 .bayiler-table tfoot td:nth-child(2) {
   text-align: center;
   color: transparent;
+  width: 150px !important;
+  min-width: 150px !important;
 }
 
 /* Borç toplamı - 3. td (4. sütun altında) */
@@ -947,6 +957,8 @@
   color: #dc3545 !important;
   font-weight: 800;
   font-size: 16px;
+  width: 150px !important;
+  min-width: 150px !important;
 }
 
 /* Alacak toplamı - 4. td (5. sütun altında) */
@@ -955,6 +967,8 @@
   color: #28a745 !important;
   font-weight: 800;
   font-size: 16px;
+  width: 150px !important;
+  min-width: 150px !important;
 }
 
 /* Net Bakiye toplamı - 5. td (6. sütun altında) */
@@ -962,6 +976,8 @@
   text-align: right;
   font-weight: 800;
   font-size: 16px;
+  width: 150px !important;
+  min-width: 150px !important;
 }
 
 .total-row {
