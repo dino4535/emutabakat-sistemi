@@ -243,7 +243,8 @@ export default function MutabakatCreateByVKN() {
                   </tbody>
                   <tfoot>
                     <tr className="total-row">
-                      <td colSpan="3"><strong>TOPLAM</strong></td>
+                      <td colSpan="2"><strong>TOPLAM</strong></td>
+                      <td></td>
                       <td><strong>{toplamBorc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong></td>
                       <td><strong>{toplamAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</strong></td>
                       <td className={toplamBakiye > 0 ? 'alacak' : toplamBakiye < 0 ? 'borc' : ''}>
