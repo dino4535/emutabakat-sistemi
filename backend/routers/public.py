@@ -271,15 +271,6 @@ def verify_mutabakat_by_no(
     # Şirket bilgisi
     company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
     
-    # DEBUG: Company bilgilerini logla
-    print(f"[DEBUG] Mutabakat ID: {mutabakat.id}, Company ID: {mutabakat.company_id}")
-    if company:
-        print(f"[DEBUG] Company Name: {company.company_name}")
-        print(f"[DEBUG] Company Logo Path: {company.logo_path}")
-        print(f"[DEBUG] Logo Path Type: {type(company.logo_path)}")
-    else:
-        print("[DEBUG] Company bulunamadı!")
-    
     # Activity logları - mutabakat oluşturma ve onaylama/red logları
     logs = db.query(ActivityLog).filter(
         ActivityLog.description.like(f"%{mutabakat_no}%")
