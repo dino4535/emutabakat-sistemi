@@ -163,7 +163,6 @@ export default function MutabakatCreateByVKN() {
               className="btn-primary"
               onClick={handleSearchBayiler}
               disabled={bayiQueryMutation.isLoading}
-              style={{ marginTop: '28px', height: '45px' }}
             >
               <FaSearch /> {bayiQueryMutation.isLoading ? 'Aranıyor...' : 'Bayileri Getir'}
             </button>
@@ -176,11 +175,18 @@ export default function MutabakatCreateByVKN() {
             <div className="form-section">
               <h3><FaCalculator /> 2. Bayi Bakiyeleri ({bayiData.toplam_bayi_sayisi} Bayi)</h3>
               <div className="company-info-box">
-                <strong>Şirket:</strong> {bayiData.company_name || vknInput}
-                <br />
-                <strong>VKN:</strong> {bayiData.vkn_tckn}
-                <br />
-                <strong>Toplam Bayi Sayısı:</strong> {bayiData.toplam_bayi_sayisi}
+                <div>
+                  <strong>Şirket:</strong>
+                  <span>{bayiData.company_name || vknInput}</span>
+                </div>
+                <div>
+                  <strong>VKN:</strong>
+                  <span>{bayiData.vkn_tckn}</span>
+                </div>
+                <div>
+                  <strong>Toplam Bayi:</strong>
+                  <span>{bayiData.toplam_bayi_sayisi} Adet</span>
+                </div>
               </div>
 
               <div className="bayiler-table-container">

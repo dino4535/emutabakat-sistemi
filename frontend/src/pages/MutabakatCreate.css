@@ -149,20 +149,35 @@
   display: flex;
   justify-content: flex-end;
   gap: 16px;
-  padding: 20px 0;
+  padding: 24px 0;
+  margin-top: 16px;
+  border-top: 2px solid #e9ecef;
 }
 
-.form-actions .btn {
-  padding: 12px 24px;
+.form-actions .btn,
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+  padding: 14px 32px;
   font-size: 15px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.form-actions .btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(74, 144, 226, 0.35);
+}
+
+.form-actions .btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(108, 117, 125, 0.25);
 }
 
 .btn-primary {
@@ -424,11 +439,15 @@
   font-size: 18px;
   color: var(--text-primary);
   margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--border-color);
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-left: 5px solid var(--primary-color);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-weight: 600;
 }
 
 .form-select,
@@ -680,6 +699,30 @@
   align-items: flex-end;
 }
 
+.vkn-search-row .btn-primary {
+  height: 48px !important;
+  margin-top: 0 !important;
+  padding: 0 28px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vkn-search-row .btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.45);
+}
+
+.vkn-search-row .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .company-info-box {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-left: 5px solid var(--primary-color);
@@ -724,6 +767,7 @@
 .bayiler-table thead {
   background: linear-gradient(135deg, var(--primary-color) 0%, #5c8dd6 100%);
   color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .bayiler-table th,

@@ -824,6 +824,91 @@
   font-weight: 600;
 }
 
+/* Bayi Detayları Tablosu */
+.bayi-detaylari-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e9ecef;
+}
+
+.bayi-detaylari-section h4 {
+  margin: 0 0 1rem;
+  color: #2d3748;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.bayi-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.bayi-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.bayi-table thead th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bayi-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background 0.2s ease;
+}
+
+.bayi-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.bayi-table tbody td {
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.bayi-table tfoot {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-weight: 700;
+  border-top: 3px solid #667eea;
+}
+
+.bayi-table tfoot td {
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.negative {
+  color: #e74c3c !important;
+  font-weight: 600;
+}
+
+.positive {
+  color: #27ae60 !important;
+  font-weight: 600;
+}
+
 /* Logs Card */
 .logs-card {
   background: white;

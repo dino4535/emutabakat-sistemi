@@ -288,6 +288,43 @@ export default function VerifySignature() {
                 </div>
               )}
             </div>
+
+            {/* Bayi Detayları */}
+            {mutabakatInfo.bayi_detaylari && mutabakatInfo.bayi_detaylari.length > 0 && (
+              <div className="bayi-detaylari-section">
+                <h4>🏪 Bayi Detayları ({mutabakatInfo.bayi_detaylari.length} Bayi)</h4>
+                <div className="table-responsive">
+                  <table className="bayi-table">
+                    <thead>
+                      <tr>
+                        <th>Bayi Kodu</th>
+                        <th>Bayi Adı</th>
+                        <th className="text-right">Bakiye</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mutabakatInfo.bayi_detaylari.map((bayi, index) => (
+                        <tr key={index}>
+                          <td>{bayi.bayi_kodu}</td>
+                          <td>{bayi.bayi_adi}</td>
+                          <td className={`text-right ${bayi.bakiye < 0 ? 'negative' : 'positive'}`}>
+                            {bayi.bakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colSpan="2"><strong>TOPLAM</strong></td>
+                        <td className={`text-right ${mutabakatInfo.bakiye < 0 ? 'negative' : 'positive'}`}>
+                          <strong>{mutabakatInfo.bakiye?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</strong>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
             
             <div className="compare-message">
               <FaSearch />
@@ -612,6 +649,43 @@ export default function VerifySignature() {
                     </div>
                   )}
                 </div>
+
+                {/* Bayi Detayları */}
+                {verificationResult.bayi_detaylari && verificationResult.bayi_detaylari.length > 0 && (
+                  <div className="bayi-detaylari-section">
+                    <h4>🏪 Bayi Detayları ({verificationResult.bayi_detaylari.length} Bayi)</h4>
+                    <div className="table-responsive">
+                      <table className="bayi-table">
+                        <thead>
+                          <tr>
+                            <th>Bayi Kodu</th>
+                            <th>Bayi Adı</th>
+                            <th className="text-right">Bakiye</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {verificationResult.bayi_detaylari.map((bayi, index) => (
+                            <tr key={index}>
+                              <td>{bayi.bayi_kodu}</td>
+                              <td>{bayi.bayi_adi}</td>
+                              <td className={`text-right ${bayi.bakiye < 0 ? 'negative' : 'positive'}`}>
+                                {bayi.bakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colSpan="2"><strong>TOPLAM</strong></td>
+                            <td className={`text-right ${verificationResult.bakiye < 0 ? 'negative' : 'positive'}`}>
+                              <strong>{verificationResult.bakiye?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</strong>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
                 <div className="legal-notice">
                   <h4>⚖️ Yasal Geçerlilik</h4>

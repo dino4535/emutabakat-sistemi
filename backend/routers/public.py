@@ -292,6 +292,16 @@ def verify_mutabakat_by_no(
             "created_at": log.created_at.isoformat() if log.created_at else None
         })
     
+    # Bayi detaylarını al
+    bayi_detaylari = []
+    if mutabakat.bayi_detaylari:
+        for detay in mutabakat.bayi_detaylari:
+            bayi_detaylari.append({
+                "bayi_kodu": detay.bayi_kodu,
+                "bayi_adi": detay.bayi_adi,
+                "bakiye": float(detay.bakiye) if detay.bakiye else 0.0
+            })
+    
     # Mutabakat özeti
     summary = {
         "mutabakat_no": mutabakat.mutabakat_no,
@@ -312,7 +322,8 @@ def verify_mutabakat_by_no(
         "onay_tarihi": mutabakat.onay_tarihi.isoformat() if mutabakat.onay_tarihi else None,
         "red_tarihi": mutabakat.red_tarihi.isoformat() if mutabakat.red_tarihi else None,
         "red_nedeni": mutabakat.red_nedeni,
-        "aciklama": mutabakat.aciklama
+        "aciklama": mutabakat.aciklama,
+        "bayi_detaylari": bayi_detaylari
     }
     
     return {
