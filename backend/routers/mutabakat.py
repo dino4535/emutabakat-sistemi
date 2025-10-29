@@ -1036,11 +1036,10 @@ def create_mutabakat_by_vkn_manual(
     
     # Activity log
     ip_info = get_real_ip_with_isp(request)
-    ActivityLogger.log_activity(
+    ActivityLogger.log_mutabakat_created(
         db=db,
         user_id=current_user.id,
-        action="MUTABAKAT_OLUSTUR",
-        description=f"Manuel mutabakat oluşturuldu: {db_mutabakat.mutabakat_no} (VKN: {payload.receiver_vkn})",
+        mutabakat_no=db_mutabakat.mutabakat_no,
         ip_info=ip_info
     )
     
