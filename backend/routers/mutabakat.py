@@ -374,9 +374,12 @@ def get_mutabakat(
     db: Session = Depends(get_db)
 ):
     """Mutabakat detayını getir (Multi-Company & Role-Based)"""
+    from sqlalchemy.orm import joinedload
     
-    # Sorgu oluştur
-    query = db.query(Mutabakat).filter(Mutabakat.id == mutabakat_id)
+    # Sorgu oluştur - bayi detaylarını da yükle
+    query = db.query(Mutabakat).options(
+        joinedload(Mutabakat.bayi_detaylari)
+    ).filter(Mutabakat.id == mutabakat_id)
     
     # Role-based filtering
     if current_user.role == UserRole.ADMIN:

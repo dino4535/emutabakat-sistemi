@@ -134,9 +134,18 @@ class MutabakatResponse(MutabakatBase):
         from_attributes = True
         arbitrary_types_allowed = True
 
+class BayiDetayResponse(BaseModel):
+    bayi_kodu: str
+    bayi_adi: str
+    bakiye: float
+    
+    class Config:
+        from_attributes = True
+
 class MutabakatDetailResponse(MutabakatResponse):
     sender: UserResponse
     receiver: UserResponse
+    bayi_detaylari: List['BayiDetayResponse'] = []
 
 # Activity Log Schemas
 class ActivityLogCreate(BaseModel):

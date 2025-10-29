@@ -331,6 +331,43 @@ export default function MutabakatDetail() {
             </div>
           </div>
         </div>
+
+        {/* Bayi Detayları */}
+        {mutabakat.bayi_detaylari && mutabakat.bayi_detaylari.length > 0 && (
+          <div className="card">
+            <h3>🏪 Bayi Detayları ({mutabakat.bayi_detaylari.length} Bayi)</h3>
+            <div className="table-responsive">
+              <table className="detail-table">
+                <thead>
+                  <tr>
+                    <th>Bayi Kodu</th>
+                    <th>Bayi Adı</th>
+                    <th className="text-right">Bakiye</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mutabakat.bayi_detaylari.map((bayi, index) => (
+                    <tr key={index}>
+                      <td>{bayi.bayi_kodu}</td>
+                      <td>{bayi.bayi_adi}</td>
+                      <td className={`text-right ${bayi.bakiye > 0 ? 'text-success' : bayi.bakiye < 0 ? 'text-danger' : ''}`}>
+                        {formatCurrency(bayi.bakiye)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="total-row">
+                    <td colSpan="2"><strong>TOPLAM</strong></td>
+                    <td className={`text-right ${mutabakat.bakiye > 0 ? 'text-success' : mutabakat.bakiye < 0 ? 'text-danger' : ''}`}>
+                      <strong>{formatCurrency(mutabakat.bakiye)}</strong>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Red Modal */}
