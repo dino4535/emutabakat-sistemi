@@ -356,15 +356,19 @@ export default function MutabakatDetail() {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot>
-                  <tr className="total-row">
-                    <td colSpan="2"><strong>TOPLAM</strong></td>
-                    <td className={`text-right ${mutabakat.bakiye > 0 ? 'text-success' : mutabakat.bakiye < 0 ? 'text-danger' : ''}`}>
-                      <strong>{formatCurrency(mutabakat.bakiye)}</strong>
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
+            </div>
+            
+            {/* Bayi Toplamları - Ayrı Kutu */}
+            <div className="bayi-totals-summary">
+              <div className="total-label-col">
+                <span className="total-label-text">TOPLAM</span>
+              </div>
+              <div className="total-value-col">
+                <span className={`total-value-text ${mutabakat.bakiye > 0 ? 'text-success' : mutabakat.bakiye < 0 ? 'text-danger' : ''}`}>
+                  {formatCurrency(mutabakat.bakiye)}
+                </span>
+              </div>
             </div>
           </div>
         )}
