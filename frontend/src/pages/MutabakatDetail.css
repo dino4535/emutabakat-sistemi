@@ -225,6 +225,92 @@
   transform: translateY(0);
 }
 
+/* Bayi Detayları Tablosu */
+.detail-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+}
+
+.detail-table thead {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+}
+
+.detail-table thead th {
+  padding: 16px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.detail-table thead th.text-right {
+  text-align: right;
+}
+
+.detail-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.detail-table tbody tr:hover {
+  background: #f8f9fa;
+  transform: scale(1.005);
+}
+
+.detail-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.detail-table tbody td {
+  padding: 14px;
+  font-size: 14px;
+  color: #495057;
+}
+
+.detail-table tfoot {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-weight: 700;
+  border-top: 3px solid #2c3e50;
+}
+
+.detail-table tfoot td {
+  padding: 16px 14px;
+  font-size: 15px;
+  color: #2c3e50;
+}
+
+.detail-table tfoot td:first-child {
+  font-size: 17px;
+  color: var(--primary-color);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 16px;
+  border-radius: 12px;
+}
+
+/* Bayi Detayları Card Header */
+.card h3 {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e9ecef;
+  color: #2c3e50;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .detail-header {
     flex-direction: column;
@@ -252,6 +338,16 @@
 
   .modal-content {
     padding: 24px;
+  }
+  
+  .detail-table {
+    font-size: 13px;
+  }
+  
+  .detail-table thead th,
+  .detail-table tbody td,
+  .detail-table tfoot td {
+    padding: 10px 8px;
   }
 }
 
