@@ -603,6 +603,8 @@ body.sidebar-open .header-right {
 }
 
 @media (max-width: 768px) {
+  /* Mobilde üst header tamamen gizlenir; tüm aksiyonlar menüye taşınır */
+  .header { display: none; }
   .header-content {
     padding: 0 15px;
     gap: 10px;
@@ -641,6 +643,8 @@ body.sidebar-open .header-right {
   }
 
   .sidebar {
+    top: env(safe-area-inset-top);
+    height: calc((var(--vh, 1vh) * 100) - env(safe-area-inset-top));
     transform: translateX(-100%);
   }
 
@@ -650,6 +654,7 @@ body.sidebar-open .header-right {
 
   .sidebar-backdrop {
     display: block;
+    top: env(safe-area-inset-top);
   }
 
   .sidebar-backdrop.open {
@@ -659,6 +664,7 @@ body.sidebar-open .header-right {
   .content {
     margin-left: 0 !important;
     padding: 20px 15px;
+    min-height: calc(var(--vh, 1vh) * 100);
   }
 
   .notification-dropdown {
