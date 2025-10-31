@@ -8,6 +8,16 @@ import { AuthProvider } from './contexts/AuthContext'
 import 'react-toastify/dist/ReactToastify.css'
 import './index.css'
 
+// iOS/Safari 100vh düzeltmesi: --vh custom birimini ayarla
+function setViewportHeightUnit() {
+  const vh = window.innerHeight * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+}
+
+// Uygulama yüklenirken ve resize olduğunda güncelle
+setViewportHeightUnit()
+window.addEventListener('resize', setViewportHeightUnit)
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

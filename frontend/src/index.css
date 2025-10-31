@@ -31,6 +31,52 @@ body {
   line-height: 1.6;
 }
 
+/* Mobil genel iyileştirmeler */
+html, body {
+  overflow-x: hidden; /* Yatay taşmaları gizle */
+  -webkit-text-size-adjust: 100%; /* iOS metin ölçek sabitleme */
+}
+
+a, button, [role="button"] {
+  -webkit-tap-highlight-color: rgba(0,0,0,0.05);
+}
+
+/* iOS safe-area destekleri (PWA ve Safari için) */
+.safe-area {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* iOS Safari akıcı scroll */
+.scroll-area {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 100vh sorunlarına karsı modern viewport birimleri */
+.vh-100 {
+  min-height: 100svh;
+}
+
+/* --vh custom birimi kullanan tam ekran sınıfı */
+.full-height {
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Formlarda iOS zoom sorununu engelle (>=16px) */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Link tıklanabilirliğini artır (en az 44x44 alan) */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -152,6 +198,53 @@ body {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow);
+}
+
+/* Mobilde tabloların tasmasini önlemek için sarmalayıcı kullanın */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobilde tabloyu kart görünüme dönüştürmek için alternatif yapı */
+.responsive-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.responsive-table thead {
+  background-color: var(--bg-color);
+}
+@media (max-width: 768px) {
+  .responsive-table thead {
+    display: none;
+  }
+  .responsive-table tr {
+    display: block;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-right: 8px;
+  }
+}
+
+.cell-wrap {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .table thead {
