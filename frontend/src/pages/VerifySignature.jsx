@@ -293,8 +293,8 @@ export default function VerifySignature() {
             {mutabakatInfo.bayi_detaylari && mutabakatInfo.bayi_detaylari.length > 0 && (
               <div className="bayi-detaylari-section">
                 <h4>🏪 Bayi Detayları ({mutabakatInfo.bayi_detaylari.length} Bayi)</h4>
-                <div className="table-responsive">
-                  <table className="bayi-table">
+                <div className="table-responsive table-wrap">
+                  <table className="bayi-table responsive-table">
                     <thead>
                       <tr>
                         <th>Bayi Kodu</th>
@@ -305,9 +305,9 @@ export default function VerifySignature() {
                     <tbody>
                       {mutabakatInfo.bayi_detaylari.map((bayi, index) => (
                         <tr key={index}>
-                          <td>{bayi.bayi_kodu}</td>
-                          <td>{bayi.bayi_adi}</td>
-                          <td className={`text-right ${bayi.bakiye < 0 ? 'negative' : 'positive'}`}>
+                          <td data-label="Bayi Kodu">{bayi.bayi_kodu}</td>
+                          <td data-label="Bayi Adı">{bayi.bayi_adi}</td>
+                          <td data-label="Bakiye" className={`text-right ${bayi.bakiye < 0 ? 'negative' : 'positive'}`}>
                             {bayi.bakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
                           </td>
                         </tr>

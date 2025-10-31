@@ -336,8 +336,8 @@ export default function MutabakatDetail() {
         {mutabakat.bayi_detaylari && mutabakat.bayi_detaylari.length > 0 && (
           <div className="card">
             <h3>🏪 Bayi Detayları ({mutabakat.bayi_detaylari.length} Bayi)</h3>
-            <div className="table-responsive">
-              <table className="detail-table">
+            <div className="table-responsive table-wrap">
+              <table className="detail-table responsive-table">
                 <thead>
                   <tr>
                     <th>Bayi Kodu</th>
@@ -348,9 +348,9 @@ export default function MutabakatDetail() {
                 <tbody>
                   {mutabakat.bayi_detaylari.map((bayi, index) => (
                     <tr key={index}>
-                      <td>{bayi.bayi_kodu}</td>
-                      <td>{bayi.bayi_adi}</td>
-                      <td className={`text-right ${bayi.bakiye > 0 ? 'text-success' : bayi.bakiye < 0 ? 'text-danger' : ''}`}>
+                      <td data-label="Bayi Kodu">{bayi.bayi_kodu}</td>
+                      <td data-label="Bayi Adı">{bayi.bayi_adi}</td>
+                      <td data-label="Bakiye" className={`text-right ${bayi.bakiye > 0 ? 'text-success' : bayi.bakiye < 0 ? 'text-danger' : ''}`}>
                         {formatCurrency(bayi.bakiye)}
                       </td>
                     </tr>

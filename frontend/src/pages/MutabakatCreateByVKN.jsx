@@ -189,8 +189,8 @@ export default function MutabakatCreateByVKN() {
                 </div>
               </div>
 
-              <div className="bayiler-table-container">
-                <table className="bayiler-table">
+              <div className="bayiler-table-container table-wrap">
+                <table className="bayiler-table responsive-table">
                   <thead>
                     <tr>
                       <th>Bayi Kodu</th>
@@ -209,12 +209,12 @@ export default function MutabakatCreateByVKN() {
 
                       return (
                         <tr key={bayi.id}>
-                          <td>{bayi.bayi_kodu}</td>
-                          <td>{bayi.bayi_adi}</td>
-                          <td className={bayi.bakiye > 0 ? 'borc' : bayi.bakiye < 0 ? 'alacak' : ''}>
+                          <td data-label="Bayi Kodu">{bayi.bayi_kodu}</td>
+                          <td data-label="Bayi Adı">{bayi.bayi_adi}</td>
+                          <td data-label="Mevcut Bakiye" className={bayi.bakiye > 0 ? 'borc' : bayi.bakiye < 0 ? 'alacak' : ''}>
                             {bayi.bakiye?.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
                           </td>
-                          <td>
+                          <td data-label="Borç (₺)">
                             <input
                               type="number"
                               step="0.01"
@@ -224,7 +224,7 @@ export default function MutabakatCreateByVKN() {
                               className="bakiye-input"
                             />
                           </td>
-                          <td>
+                          <td data-label="Alacak (₺)">
                             <input
                               type="number"
                               step="0.01"
@@ -234,7 +234,7 @@ export default function MutabakatCreateByVKN() {
                               className="bakiye-input"
                             />
                           </td>
-                          <td className={netBakiye > 0 ? 'alacak' : netBakiye < 0 ? 'borc' : ''}>
+                          <td data-label="Net Bakiye" className={netBakiye > 0 ? 'alacak' : netBakiye < 0 ? 'borc' : ''}>
                             {netBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺
                           </td>
                         </tr>
