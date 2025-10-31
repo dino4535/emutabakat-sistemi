@@ -89,7 +89,13 @@ export default function UserManagement() {
   // Kullanıcı oluştur
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post('/api/auth/users', data)
+      const payload = { ...data }
+      // Backend beklenen alan adı: vkn_tckn
+      if (payload.tax_number !== undefined) {
+        payload.vkn_tckn = payload.tax_number
+        delete payload.tax_number
+      }
+      const response = await axios.post('/api/auth/users', payload)
       return response.data
     },
     onSuccess: () => {
@@ -106,7 +112,13 @@ export default function UserManagement() {
   // Kullanıcı güncelle
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const response = await axios.put(`/api/auth/users/${id}`, data)
+      const payload = { ...data }
+      // Backend beklenen alan adı: vkn_tckn
+      if (payload.tax_number !== undefined) {
+        payload.vkn_tckn = payload.tax_number
+        delete payload.tax_number
+      }
+      const response = await axios.put(`/api/auth/users/${id}`, payload)
       return response.data
     },
     onSuccess: () => {
