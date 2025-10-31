@@ -22,7 +22,9 @@ class GoldSMS:
         """
         if company and company.sms_enabled:
             # Multi-Company: Şirketin kendi SMS ayarları
-            self.username = company.sms_username or os.getenv("GOLDSMS_USERNAME")
+            username_raw = company.sms_username or os.getenv("GOLDSMS_USERNAME")
+            # Fix: dinogida45 -> dinogıda45 (GoldSMS hesabı Türkçe ı ile kayıtlı)
+            self.username = username_raw.replace('dinogida45', 'dinogıda45') if username_raw else None
             self.password = company.sms_password or os.getenv("GOLDSMS_PASSWORD")
             self.originator = company.sms_header or os.getenv("GOLDSMS_ORIGINATOR")
         else:
