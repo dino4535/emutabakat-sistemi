@@ -307,16 +307,19 @@ export default function UserManagement() {
     
     if (!selectedUser) return
     
-    const updateData = {
-      email: selectedUser.email,
-      full_name: selectedUser.full_name,
-      company_name: selectedUser.company_name,
-      tax_number: selectedUser.tax_number,
-      phone: selectedUser.phone,
-      address: selectedUser.address,
-      role: selectedUser.role,
-      is_active: selectedUser.is_active
+    // Sadece değişen ve dolu alanları gönder
+    const updateData = {}
+    const putIf = (key, val) => {
+      if (val !== undefined && val !== null && val !== '') updateData[key] = val
     }
+    putIf('email', selectedUser.email)
+    putIf('full_name', selectedUser.full_name)
+    putIf('company_name', selectedUser.company_name)
+    putIf('tax_number', selectedUser.tax_number)
+    putIf('phone', selectedUser.phone)
+    putIf('address', selectedUser.address)
+    putIf('role', selectedUser.role)
+    updateData.is_active = !!selectedUser.is_active
     
     // Şifre değiştirildiyse ekle
     if (selectedUser.new_password) {
