@@ -52,6 +52,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: nowrap;
   height: 100%;
   padding: 0 30px;
 }
@@ -602,6 +603,7 @@ body.sidebar-open .header-right {
 @media (max-width: 768px) {
   .header-content {
     padding: 0 15px;
+    gap: 10px;
   }
 
   .company-logo {
@@ -617,6 +619,11 @@ body.sidebar-open .header-right {
     height: 36px;
     font-size: 16px;
   }
+
+  /* Yer kazanmak için hoş geldiniz bloğunu gizle ve sağ alanı daralt */
+  .welcome-message { display: none; }
+  .header-left { flex: 1; min-width: 0; }
+  .header-right { flex-shrink: 0; gap: 8px; }
 
   .user-avatar {
     width: 38px;
