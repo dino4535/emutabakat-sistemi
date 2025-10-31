@@ -45,7 +45,7 @@
   height: var(--header-height);
   background: var(--header-bg);
   box-shadow: var(--shadow-sm);
-  z-index: 100;
+  z-index: 1000; /* Sidebar altına düşmemesi için yüksek ama sidebar'dan düşük */
 }
 
 .header-content {
@@ -415,15 +415,15 @@
 .sidebar {
   position: fixed;
   left: 0;
-  top: var(--header-height);
+  top: calc(var(--header-height) + env(safe-area-inset-top));
   width: var(--sidebar-width);
-  height: calc(100vh - var(--header-height));
+  height: calc((var(--vh, 1vh) * 100) - calc(var(--header-height) + env(safe-area-inset-top)));
   background: var(--sidebar-bg);
   box-shadow: var(--shadow-md);
   overflow-y: auto;
   overflow-x: hidden;
   transition: transform var(--transition-speed), width var(--transition-speed);
-  z-index: 90;
+  z-index: 1200; /* Header ve backdrop üstünde */
   padding: 15px 0;
 }
 
@@ -560,13 +560,24 @@
 .sidebar-backdrop {
   display: none;
   position: fixed;
-  top: var(--header-height);
+  top: calc(var(--header-height) + env(safe-area-inset-top));
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 85;
+  z-index: 1100; /* Header'ın üstünde, sidebar'ın altında */
   backdrop-filter: blur(2px);
+}
+
+/* Menü açıkken header aksiyonlarını kapat (tıklanma sorununu önler) */
+body.sidebar-open .header-right {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* İçerik alanı alt bar ile çakışmasın */
+.content {
+  padding-bottom: max(30px, env(safe-area-inset-bottom));
 }
 
 /* ========== RESPONSIVE ========== */

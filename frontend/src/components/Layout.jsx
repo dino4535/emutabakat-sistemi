@@ -33,6 +33,16 @@ export default function Layout() {
     setIsSidebarOpen(!isSidebarOpen)
   }
 
+  // Body'ye durum sınıfı ekle (mobilde overlay varken üst öğeler tıklanmasın)
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.classList.add('sidebar-open')
+    } else {
+      document.body.classList.remove('sidebar-open')
+    }
+    return () => document.body.classList.remove('sidebar-open')
+  }, [isSidebarOpen])
+
   const isActive = (path) => location.pathname === path
   
   // Rollere göre menü kontrolü
