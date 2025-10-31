@@ -206,7 +206,10 @@ export default function Layout() {
         )}
         
         <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
-          <nav className="nav">
+          <nav className="nav" onClick={(e) => {
+            const el = e.target.closest('a,button')
+            if (el) setIsSidebarOpen(false)
+          }}>
             {/* Ana Menü */}
             <div className="nav-section">
               <div className="nav-section-title">Menü</div>

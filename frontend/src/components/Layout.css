@@ -426,7 +426,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   transition: transform var(--transition-speed), width var(--transition-speed);
-  z-index: 1200; /* Header ve backdrop üstünde */
+  z-index: 2000; /* Backdrop'un da üstünde olsun */
   padding: 15px 0;
 }
 
@@ -568,7 +568,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1100; /* Header'ın üstünde, sidebar'ın altında */
+  z-index: 1500; /* Sidebar'ın altında kalsın */
   backdrop-filter: blur(2px);
 }
 
