@@ -227,6 +227,8 @@
   animation: slideDown 0.3s ease-out;
 }
 
+/* Mobilde dropdown görünmeyeceği için gizli; header-right zaten gizleniyor */
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -623,7 +625,8 @@ body.sidebar-open .header-right {
   /* Yer kazanmak için hoş geldiniz bloğunu gizle ve sağ alanı daralt */
   .welcome-message { display: none; }
   .header-left { flex: 1; min-width: 0; }
-  .header-right { flex-shrink: 0; gap: 8px; }
+  /* Mobilde bildirim/profil/çıkış ikonlarını tamamen gizle */
+  .header-right { display: none; }
 
   .user-avatar {
     width: 38px;

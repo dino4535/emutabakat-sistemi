@@ -316,6 +316,19 @@ export default function Layout() {
                 <span>Profil Ayarları</span>
               </Link>
             </div>
+
+            {/* Mobil için hızlı işlemler */}
+            <div className="nav-section mobile-only">
+              <div className="nav-section-title">Hızlı İşlemler</div>
+              <Link to="/profile" className="nav-link">
+                <FaUser />
+                <span>Profil</span>
+              </Link>
+              <button onClick={handleLogout} className="nav-link" style={{ background: 'transparent', border: 0 }}>
+                <FaSignOutAlt />
+                <span>Çıkış</span>
+              </button>
+            </div>
           </nav>
         </aside>
 
