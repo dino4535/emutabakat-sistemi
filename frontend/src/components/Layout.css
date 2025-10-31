@@ -493,6 +493,7 @@
   transition: all var(--transition-speed);
   position: relative;
   overflow: hidden;
+  pointer-events: auto; /* Link tıklamalarını garanti et */
 }
 
 .nav-link svg {
