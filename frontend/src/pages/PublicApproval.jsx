@@ -4,7 +4,8 @@ import { FaCheckCircle, FaTimesCircle, FaSpinner, FaFileInvoice, FaCalendarAlt, 
 import { toast } from 'react-toastify';
 import './PublicApproval.css';
 
-const API_URL = 'http://localhost:8000';
+// Üretimde Nginx proxy üzerinden çalışması için relatif /api kullan
+const API_URL = '/api';
 
 function PublicApproval() {
   const { token } = useParams();
@@ -23,7 +24,7 @@ function PublicApproval() {
   const fetchMutabakat = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/public/mutabakat/${token}`);
+      const response = await fetch(`${API_URL}/public/mutabakat/${token}`);
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -48,7 +49,7 @@ function PublicApproval() {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`${API_URL}/api/public/mutabakat/${token}/action`, {
+      const response = await fetch(`${API_URL}/public/mutabakat/${token}/action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

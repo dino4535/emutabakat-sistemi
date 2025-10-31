@@ -518,7 +518,11 @@ def send_mutabakat(
     if receiver and receiver.phone:
         try:
             receiver_name = receiver.company_name or receiver.full_name or receiver.username
-            sms_service.send_mutabakat_notification(
+            # Şirket bazlı SMS başlığı için company ile örnek oluştur
+            from backend.models import Company
+            from backend.sms import GoldSMS
+            company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
+            GoldSMS(company).send_mutabakat_notification(
                 phone=receiver.phone,
                 customer_name=receiver_name,
                 mutabakat_no=mutabakat.mutabakat_no,
@@ -609,7 +613,10 @@ def send_all_draft_mutabakats(
             if receiver and receiver.phone:
                 try:
                     receiver_name = receiver.company_name or receiver.full_name or receiver.username
-                    sms_service.send_mutabakat_notification(
+                    from backend.models import Company
+                    from backend.sms import GoldSMS
+                    company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
+                    GoldSMS(company).send_mutabakat_notification(
                         phone=receiver.phone,
                         customer_name=receiver_name,
                         mutabakat_no=mutabakat.mutabakat_no,
