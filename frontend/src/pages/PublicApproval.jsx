@@ -96,7 +96,7 @@ function PublicApproval() {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`${API_URL}/api/public/mutabakat/${token}/action`, {
+      const response = await fetch(`${API_URL}/public/mutabakat/${token}/action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
