@@ -118,6 +118,13 @@ export default function UserManagement() {
         payload.vkn_tckn = payload.tax_number
         delete payload.tax_number
       }
+      // Boş string/null alanları gönderme (Pydantic 422'yi önle)
+      Object.keys(payload).forEach((key) => {
+        const value = payload[key]
+        if (value === '' || value === null || value === undefined) {
+          delete payload[key]
+        }
+      })
       const response = await axios.put(`/api/auth/users/${id}`, payload)
       return response.data
     },
