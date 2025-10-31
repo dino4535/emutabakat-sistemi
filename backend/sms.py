@@ -220,7 +220,8 @@ class GoldSMS:
         # Tek kullanımlık onay linki
         if approval_token:
             from backend.utils.tokens import get_approval_link
-            approval_link = get_approval_link(approval_token)
+            # FRONTEND_URL env ya da şirket ayarından gelen URL'i zorunlu kullan
+            approval_link = get_approval_link(approval_token, base_url=self.frontend_url)
         else:
             approval_link = "Sisteme giris yaparak"
         
