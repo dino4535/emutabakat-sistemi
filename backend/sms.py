@@ -22,14 +22,14 @@ class GoldSMS:
         """
         if company and company.sms_enabled:
             # Multi-Company: Şirketin kendi SMS ayarları
-            self.username = company.sms_username or os.getenv("GOLDSMS_USERNAME", "dinogıda45")
-            self.password = company.sms_password or os.getenv("GOLDSMS_PASSWORD", "Dino45??*123D")
-            self.originator = company.sms_header or os.getenv("GOLDSMS_ORIGINATOR", "DiNO GIDA")
+            self.username = company.sms_username or os.getenv("GOLDSMS_USERNAME")
+            self.password = company.sms_password or os.getenv("GOLDSMS_PASSWORD")
+            self.originator = company.sms_header or os.getenv("GOLDSMS_ORIGINATOR")
         else:
             # Fallback: Env'den al (geriye dönük uyumluluk)
-            self.username = os.getenv("GOLDSMS_USERNAME", "dinogıda45")
-            self.password = os.getenv("GOLDSMS_PASSWORD", "Dino45??*123D")
-            self.originator = os.getenv("GOLDSMS_ORIGINATOR", "DiNO GIDA")
+            self.username = os.getenv("GOLDSMS_USERNAME")
+            self.password = os.getenv("GOLDSMS_PASSWORD")
+            self.originator = os.getenv("GOLDSMS_ORIGINATOR")
         
         # GoldSMS API v3 URL
         self.api_url = os.getenv("GOLDSMS_API_URL", "http://apiv3.goldmesaj.net/api/sendSMS")
@@ -226,13 +226,13 @@ class GoldSMS:
             approval_link = "Sisteme giris yaparak"
         
         # SMS mesajı (tek kullanımlık link ile)
+        # Originator (sms_header) zaten SMS'in başlığında gözükür, metin içinde tekrar yazmaya gerek yok
         message = (
             f"Sayin {customer_name},\n"
             f"Mutabakat No: {mutabakat_no}\n"
             f"Tutar: {formatted_amount}\n"
             f"Onaylamak icin:\n"
-            f"{approval_link}\n"
-            f"- DiNO GIDA"
+            f"{approval_link}"
         )
         
         return self.send_sms(phone, message)
@@ -257,8 +257,7 @@ class GoldSMS:
         message = (
             f"Mutabakat onaylandi!\n"
             f"Musteri: {customer_name}\n"
-            f"Mutabakat No: {mutabakat_no}\n"
-            f"- DiNO GIDA"
+            f"Mutabakat No: {mutabakat_no}"
         )
         
         return self.send_sms(phone, message)
@@ -286,8 +285,7 @@ class GoldSMS:
             f"Mutabakat reddedildi!\n"
             f"Musteri: {customer_name}\n"
             f"Mutabakat No: {mutabakat_no}\n"
-            f"Neden: {reason[:50]}\n"
-            f"- DiNO GIDA"
+            f"Neden: {reason[:50]}"
         )
         
         return self.send_sms(phone, message)

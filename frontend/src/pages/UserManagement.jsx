@@ -1476,7 +1476,7 @@ export default function UserManagement() {
         <div className="modal-overlay" style={{ zIndex: 10001 }} onClick={() => setShowDeleteKVKKConfirm(false)}>
           <div className="confirmation-popup" onClick={(e) => e.stopPropagation()}>
             <div className="confirmation-header">
-              <h3>localhost:3000 web sitesinin mesajı</h3>
+              <h3>⚠️ KVKK Onaylarını Sil</h3>
             </div>
             <div className="confirmation-body">
               <p><strong>{selectedUserForKVKK.username}</strong> kullanıcısının KVKK onaylarını silmek istediğinize emin misiniz?</p>

@@ -44,6 +44,9 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
       - SMTP_FROM_NAME=E-Mutabakat Sistemi
+      - GOLDSMS_USERNAME=${GOLDSMS_USERNAME}
+      - GOLDSMS_PASSWORD=${GOLDSMS_PASSWORD}
+      - GOLDSMS_ORIGINATOR=${GOLDSMS_ORIGINATOR}
     volumes:
       - ./fonts:/app/fonts
       - ./certificates:/app/certificates
@@ -83,6 +86,9 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - GOLDSMS_USERNAME=${GOLDSMS_USERNAME}
+      - GOLDSMS_PASSWORD=${GOLDSMS_PASSWORD}
+      - GOLDSMS_ORIGINATOR=${GOLDSMS_ORIGINATOR}
     volumes:
       - ./fonts:/app/fonts
       - ./certificates:/app/certificates
