@@ -5,6 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
+import os
 from backend.models import Mutabakat
 
 def generate_approval_token() -> str:
@@ -109,5 +110,8 @@ def get_approval_link(token: str, base_url: str = "http://localhost:3000") -> st
     Returns:
         str: Tam onay linki
     """
-    return f"{base_url}/mutabakat/onay/{token}"
+    # Ortam değişkeninden FRONTEND_URL al; yoksa parametre ile gelen base_url'i kullan
+    env_base = os.getenv("FRONTEND_URL")
+    final_base = (env_base or base_url).rstrip('/')
+    return f"{final_base}/mutabakat/onay/{token}"
 
