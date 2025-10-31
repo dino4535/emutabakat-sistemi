@@ -199,7 +199,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <div className="main-container" ref={swipeRef}>
+      <div className="main-container">
         {/* Mobil için backdrop */}
         {isSidebarOpen && (
           <div className="sidebar-backdrop" onClick={toggleSidebar}></div>
@@ -341,7 +341,7 @@ export default function Layout() {
           </nav>
         </aside>
 
-        <main className={`content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <main ref={swipeRef} className={`content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
           <Outlet />
         </main>
       </div>
