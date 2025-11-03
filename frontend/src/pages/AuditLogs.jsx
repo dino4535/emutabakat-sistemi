@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import './AuditLogs.css';
 
 const AuditLogs = () => {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({
     action: '',
     status: '',
@@ -16,31 +19,28 @@ const AuditLogs = () => {
     search: ''
   });
 
-  // API URL
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
   // Audit logları fetch et
   const fetchAuditLogs = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      setError(null);
       
       const params = new URLSearchParams({
         page: page,
         page_size: 50,
-        ...filters
+        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''))
       });
 
-      const response = await axios.get(`${API_URL}/api/audit-logs/?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`/api/audit-logs/?${params}`);
 
-      setLogs(response.data.logs);
-      setTotalPages(response.data.total_pages);
+      setLogs(response.data.logs || []);
+      setTotalPages(response.data.total_pages || 1);
+      setTotal(response.data.total || 0);
     } catch (error) {
       console.error('Audit logları yüklenemedi:', error);
+      setError(error.response?.data?.detail || 'Audit logları yüklenirken bir hata oluştu');
       if (error.response?.status === 403) {
-        alert('Bu sayfaya erişim yetkiniz yok!');
+        setError('Bu sayfaya erişim yetkiniz yok! Sadece admin kullanıcılar audit loglarını görüntüleyebilir.');
       }
     } finally {
       setLoading(false);
@@ -50,10 +50,7 @@ const AuditLogs = () => {
   // İstatistikleri fetch et
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/audit-logs/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get('/api/audit-logs/stats');
       setStats(response.data);
     } catch (error) {
       console.error('İstatistikler yüklenemedi:', error);
@@ -63,9 +60,7 @@ const AuditLogs = () => {
   // CSV export
   const exportCSV = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/audit-logs/export/csv`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.get('/api/audit-logs/export/csv', {
         responseType: 'blob'
       });
 
@@ -85,148 +80,215 @@ const AuditLogs = () => {
   useEffect(() => {
     fetchAuditLogs();
     fetchStats();
-  }, [page, filters]);
+  }, [page]);
+
+  useEffect(() => {
+    // Filtre değiştiğinde sayfa 1'e dön
+    if (page === 1) {
+      fetchAuditLogs();
+    } else {
+      setPage(1);
+    }
+  }, [filters]);
 
   // Durum badge rengi
   const getStatusBadgeColor = (status) => {
     switch (status) {
-      case 'success': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'success': return 'badge-success';
+      case 'failed': return 'badge-warning';
+      case 'error': return 'badge-error';
+      default: return 'badge-default';
     }
   };
 
   // Action türü Türkçe çeviri
   const translateAction = (action) => {
     const translations = {
-      'login': 'Giriş',
-      'login_failed': 'Başarısız Giriş',
-      'logout': 'Çıkış',
-      'mutabakat_create': 'Mutabakat Oluşturma',
-      'mutabakat_send': 'Mutabakat Gönderme',
-      'mutabakat_approve': 'Mutabakat Onaylama',
-      'mutabakat_reject': 'Mutabakat Reddetme',
-      'mutabakat_delete': 'Mutabakat Silme',
-      'user_create': 'Kullanıcı Oluşturma',
-      'user_update': 'Kullanıcı Güncelleme',
-      'user_delete': 'Kullanıcı Silme'
+      'login': '🔐 Giriş',
+      'login_failed': '❌ Başarısız Giriş',
+      'logout': '🚪 Çıkış',
+      'password_change': '🔑 Şifre Değiştirme',
+      'mutabakat_create': '📝 Mutabakat Oluşturma',
+      'mutabakat_send': '📤 Mutabakat Gönderme',
+      'mutabakat_approve': '✅ Mutabakat Onaylama',
+      'mutabakat_reject': '❌ Mutabakat Reddetme',
+      'mutabakat_delete': '🗑️ Mutabakat Silme',
+      'mutabakat_view': '👁️ Mutabakat Görüntüleme',
+      'mutabakat_download_pdf': '📥 PDF İndirme',
+      'user_create': '👤 Kullanıcı Oluşturma',
+      'user_update': '✏️ Kullanıcı Güncelleme',
+      'user_delete': '🗑️ Kullanıcı Silme',
+      'bayi_create': '🏪 Bayi Oluşturma',
+      'bayi_update': '✏️ Bayi Güncelleme',
+      'bayi_delete': '🗑️ Bayi Silme'
     };
     return translations[action] || action;
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="audit-logs-container">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">📋 Audit Logs (Sistem Kayıtları)</h1>
-        <button
-          onClick={exportCSV}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-        >
+      <div className="audit-logs-header">
+        <div className="header-title">
+          <h1>📋 Audit Logs</h1>
+          <p className="header-subtitle">Sistem Kayıtları ve Güvenlik Logları</p>
+        </div>
+        <button onClick={exportCSV} className="btn-export">
           📥 CSV İndir
         </button>
       </div>
 
       {/* İstatistikler */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-gray-500 text-sm">Toplam Log</div>
-            <div className="text-2xl font-bold">{stats.total_logs.toLocaleString('tr-TR')}</div>
+        <div className="stats-grid">
+          <div className="stat-card stat-primary">
+            <div className="stat-icon">📊</div>
+            <div className="stat-content">
+              <div className="stat-label">Toplam Log</div>
+              <div className="stat-value">{stats.total_logs.toLocaleString('tr-TR')}</div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-gray-500 text-sm">Bugünkü Loglar</div>
-            <div className="text-2xl font-bold text-blue-600">{stats.today_logs.toLocaleString('tr-TR')}</div>
+          <div className="stat-card stat-info">
+            <div className="stat-icon">📅</div>
+            <div className="stat-content">
+              <div className="stat-label">Bugünkü Loglar</div>
+              <div className="stat-value">{stats.today_logs.toLocaleString('tr-TR')}</div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-gray-500 text-sm">Başarısız İşlemler</div>
-            <div className="text-2xl font-bold text-red-600">{stats.failed_actions.toLocaleString('tr-TR')}</div>
+          <div className="stat-card stat-danger">
+            <div className="stat-icon">⚠️</div>
+            <div className="stat-content">
+              <div className="stat-label">Başarısız İşlemler</div>
+              <div className="stat-value">{stats.failed_actions.toLocaleString('tr-TR')}</div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-gray-500 text-sm">Aktif Kullanıcılar</div>
-            <div className="text-2xl font-bold text-green-600">{stats.unique_users.toLocaleString('tr-TR')}</div>
+          <div className="stat-card stat-success">
+            <div className="stat-icon">👥</div>
+            <div className="stat-content">
+              <div className="stat-label">Aktif Kullanıcılar</div>
+              <div className="stat-value">{stats.unique_users.toLocaleString('tr-TR')}</div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Filtreler */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="filters-card">
+        <div className="filters-grid">
           <input
             type="text"
             placeholder="🔍 Arama..."
-            className="border border-gray-300 rounded-lg px-3 py-2"
+            className="filter-input"
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
           />
           <input
             type="text"
             placeholder="👤 Kullanıcı Adı"
-            className="border border-gray-300 rounded-lg px-3 py-2"
+            className="filter-input"
             value={filters.username}
             onChange={(e) => setFilters({ ...filters, username: e.target.value })}
           />
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2"
+            className="filter-select"
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
           >
             <option value="">Tüm Durumlar</option>
-            <option value="success">Başarılı</option>
-            <option value="failed">Başarısız</option>
-            <option value="error">Hata</option>
+            <option value="success">✅ Başarılı</option>
+            <option value="failed">⚠️ Başarısız</option>
+            <option value="error">❌ Hata</option>
           </select>
           <button
             onClick={() => setFilters({ action: '', status: '', username: '', search: '' })}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
+            className="btn-reset"
           >
-            🔄 Filtreleri Temizle
+            🔄 Temizle
           </button>
         </div>
+        {total > 0 && (
+          <div className="filter-results">
+            {total} kayıt bulundu
+          </div>
+        )}
       </div>
 
+      {/* Hata Mesajı */}
+      {error && (
+        <div className="error-card">
+          <div className="error-icon">⚠️</div>
+          <div className="error-content">
+            <h3>Hata</h3>
+            <p>{error}</p>
+          </div>
+        </div>
+      )}
+
       {/* Tablo */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="table-card">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Yükleniyor...</div>
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Yükleniyor...</p>
+          </div>
         ) : logs.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">Kayıt bulunamadı</div>
+          <div className="empty-state">
+            <div className="empty-icon">📋</div>
+            <h3>Kayıt Bulunamadı</h3>
+            <p>Henüz audit log kaydı yok veya filtrelerinize uygun kayıt bulunamadı.</p>
+            {Object.values(filters).some(v => v !== '') && (
+              <button
+                onClick={() => setFilters({ action: '', status: '', username: '', search: '' })}
+                className="btn-clear-filters"
+              >
+                Filtreleri Temizle
+              </button>
+            )}
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+          <div className="table-responsive">
+            <table className="audit-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlem</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Şirket</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Adresi</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Açıklama</th>
+                  <th>Tarih</th>
+                  <th>İşlem</th>
+                  <th>Durum</th>
+                  <th>Kullanıcı</th>
+                  <th>Şirket</th>
+                  <th>IP Adresi</th>
+                  <th>Konum</th>
+                  <th>Açıklama</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody>
                 {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                      {format(new Date(log.created_at), 'dd.MM.yyyy HH:mm:ss', { locale: tr })}
+                  <tr key={log.id} className="table-row">
+                    <td className="td-date">
+                      {format(new Date(log.created_at), 'dd.MM.yyyy', { locale: tr })}
+                      <br />
+                      <span className="time-text">
+                        {format(new Date(log.created_at), 'HH:mm:ss', { locale: tr })}
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="td-action">
                       {translateAction(log.action)}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(log.status)}`}>
+                    <td>
+                      <span className={`badge ${getStatusBadgeColor(log.status)}`}>
                         {log.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{log.username || '-'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{log.company_name || '-'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 font-mono">{log.ip_address || '-'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-md truncate">
+                    <td className="td-user">{log.username || '-'}</td>
+                    <td className="td-company">{log.company_name || '-'}</td>
+                    <td className="td-ip">{log.ip_address || '-'}</td>
+                    <td className="td-location">
+                      {log.city ? `${log.city}, ${log.country}` : '-'}
+                      {log.isp && <div className="isp-text">{log.isp}</div>}
+                    </td>
+                    <td className="td-description">
                       {log.action_description || '-'}
                       {log.error_message && (
-                        <div className="text-red-500 text-xs mt-1">❌ {log.error_message}</div>
+                        <div className="error-message">❌ {log.error_message}</div>
                       )}
                     </td>
                   </tr>
@@ -239,21 +301,21 @@ const AuditLogs = () => {
 
       {/* Sayfalama */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-6">
+        <div className="pagination">
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+            className="btn-page"
           >
             ← Önceki
           </button>
-          <span className="text-gray-600">
+          <span className="page-info">
             Sayfa {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+            className="btn-page"
           >
             Sonraki →
           </button>
@@ -264,4 +326,3 @@ const AuditLogs = () => {
 };
 
 export default AuditLogs;
-
