@@ -73,7 +73,13 @@ class PDFSigner:
         
         try:
             # PKCS#12 sertifikasını yükle
-            passphrase = cert_password.encode() if cert_password else None
+            # Parolayı sanitize et: trim + Unicode normalize (DB'den gelen boşluk/karakter sorunlarını önle)
+            passphrase = None
+            if cert_password:
+                import unicodedata
+                sanitized = unicodedata.normalize("NFC", cert_password.strip())
+                passphrase = sanitized.encode()
+            
             signer = signers.SimpleSigner.load_pkcs12(
                 pfx_file=str(full_path),
                 passphrase=passphrase
