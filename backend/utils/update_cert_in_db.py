@@ -2,8 +2,8 @@
 Şirket sertifika yolu ve şifrelerini günceller.
 
 Varsayılanlar:
-- Dino (VKN: 4640067727) -> certificates/dino_gida.p12, parola: D!no-2025_Sign
-- Bermer (VKN: 1660290656) -> certificates/bermer.p12, parola: B3rm3r-2025_Sign
+- Dino (VKN: 4640067727) -> certificates/dino_gida.p12, parola: Dino2025!@
+- Bermer (VKN: 1660290656) -> certificates/bermer.p12, parola: Bermer2025!@
 """
 from backend.database import SessionLocal
 from backend.models import Company
@@ -13,8 +13,8 @@ def main() -> None:
     db = SessionLocal()
 
     updates = [
-        ("4640067727", "certificates/dino_gida.p12", "D!no-2025_Sign"),
-        ("1660290656", "certificates/bermer.p12", "B3rm3r-2025_Sign"),
+        ("4640067727", "certificates/dino_gida.p12", "Dino2025!@"),
+        ("1660290656", "certificates/bermer.p12", "Bermer2025!@"),
     ]
 
     for vkn, path, pwd in updates:

@@ -1,9 +1,9 @@
 """
 Self-signed PKCS#12 (.p12) sertifikaları üretir ve certificates/ altına kaydeder.
 
-Öntanımlı şirketler:
-- Dino Gıda -> dino_gida.p12 (parola: D!no-2025_Sign)
-- Bermer -> bermer.p12 (parola: B3rm3r-2025_Sign)
+Öntanımlı şirketler (müşteri bilgileri ve parolalarla):
+- Dino Gıda -> dino_gida.p12 (parola: Dino2025!@)
+- Bermer -> bermer.p12 (parola: Bermer2025!@)
 
 Notlar:
 - Önce Python cryptography ile üretmeyi dener; yoksa openssl komutuna düşer.
@@ -17,16 +17,24 @@ from pathlib import Path
 
 COMPANIES = [
     {
-        "name": "Dino Gida San. Tic. Ltd. Sti.",
+        "name": "Dino Gıda San. Tic. Ltd. Şti.",
         "cn": "DINO GIDA",
         "outfile": "dino_gida.p12",
-        "password": "D!no-2025_Sign",
+        "password": "Dino2025!@",
+        "email": "info@dinogida.com.tr",
+        "phone": "+908502204566",
+        "address": "Görece Cumhuriyet Mah. Gülçırpı Cad. No:19 Menderes/İZMİR",
+        "owners": ["Hüseyin Kaplan", "İbrahim Kaplan"],
     },
     {
-        "name": "Bermer Gida San. Tic. Ltd. Sti.",
+        "name": "BERMER ALKOLLÜ İÇKİLER MEŞRUBAT PAZARLAMA DAĞITIM SANAYİ TİCARET LİMİTED ŞİRKETİ",
         "cn": "BERMER",
         "outfile": "bermer.p12",
-        "password": "B3rm3r-2025_Sign",
+        "password": "Bermer2025!@",
+        "email": "info@bermer.com.tr",
+        "phone": "+908502204566",
+        "address": "Görece Cumhuriyet Mah. Gülçırpı Cad. No:19 Menderes/İZMİR",
+        "owners": [],
     },
 ]
 
@@ -46,17 +54,20 @@ def openssl_exists() -> bool:
         return False
 
 
-def generate_with_openssl(common_name: str, company_name: str, p12_path: Path, password: str) -> None:
+def generate_with_openssl(common_name: str, company_name: str, p12_path: Path, password: str, email: str | None = None) -> None:
     tmp_key = p12_path.with_suffix(".key")
     tmp_crt = p12_path.with_suffix(".crt")
 
     # Key + self-signed cert
+    subj = f"/C=TR/ST=Istanbul/L=Istanbul/O={company_name}/OU=IT/CN={common_name}"
+    if email:
+        subj += f"/emailAddress={email}"
     subprocess.run([
         "openssl", "req", "-newkey", "rsa:2048", "-nodes",
         "-keyout", str(tmp_key),
         "-x509", "-days", "3650",
         "-out", str(tmp_crt),
-        "-subj", f"/C=TR/ST=Istanbul/L=Istanbul/O={company_name}/OU=IT/CN={common_name}"
+        "-subj", subj
     ], check=True)
 
     # Package to PKCS#12
@@ -77,7 +88,7 @@ def generate_with_openssl(common_name: str, company_name: str, p12_path: Path, p
         pass
 
 
-def generate_with_cryptography(common_name: str, company_name: str, p12_path: Path, password: str) -> None:
+def generate_with_cryptography(common_name: str, company_name: str, p12_path: Path, password: str, email: str | None = None) -> None:
     from datetime import datetime, timedelta
     from cryptography import x509
     from cryptography.hazmat.primitives import hashes, serialization
@@ -99,7 +110,7 @@ def generate_with_cryptography(common_name: str, company_name: str, p12_path: Pa
         x509.NameAttribute(NameOID.COMMON_NAME, common_name),
     ])
 
-    cert = (
+    builder = (
         x509.CertificateBuilder()
         .subject_name(subject)
         .issuer_name(issuer)
@@ -107,8 +118,14 @@ def generate_with_cryptography(common_name: str, company_name: str, p12_path: Pa
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.utcnow() - timedelta(days=1))
         .not_valid_after(datetime.utcnow() + timedelta(days=3650))
-        .sign(private_key=key, algorithm=hashes.SHA256())
     )
+    # Email SAN ekle
+    if email:
+        builder = builder.add_extension(
+            x509.SubjectAlternativeName([x509.RFC822Name(email)]),
+            critical=False,
+        )
+    cert = builder.sign(private_key=key, algorithm=hashes.SHA256())
 
     pfx = pkcs12.serialize_key_and_certificates(
         name=bytes(f"{company_name} Sign", "utf-8"),
@@ -138,9 +155,9 @@ def main() -> int:
 
         try:
             if can_use_openssl:
-                generate_with_openssl(common_name=c["cn"], company_name=c["name"], p12_path=p12_path, password=c["password"])
+                generate_with_openssl(common_name=c["cn"], company_name=c["name"], p12_path=p12_path, password=c["password"], email=c.get("email"))
             else:
-                generate_with_cryptography(common_name=c["cn"], company_name=c["name"], p12_path=p12_path, password=c["password"])
+                generate_with_cryptography(common_name=c["cn"], company_name=c["name"], p12_path=p12_path, password=c["password"], email=c.get("email"))
             print(f"[CERT] Olusturuldu: {p12_path.name}")
         except Exception as e:
             print(f"[CERT] Hata: {c['outfile']}: {e}")
