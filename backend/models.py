@@ -180,6 +180,7 @@ class Mutabakat(Base):
     items = relationship("MutabakatItem", back_populates="mutabakat", cascade="all, delete-orphan")
     bayi_detaylari = relationship("MutabakatBayiDetay", back_populates="mutabakat", cascade="all, delete-orphan")  # Bayi detayları
     attachments = relationship("MutabakatAttachment", back_populates="mutabakat", cascade="all, delete-orphan")
+    sms_logs = relationship("SMSVerificationLog", back_populates="mutabakat", cascade="all, delete-orphan")  # SMS gönderim logları
 
 class MutabakatItem(Base):
     """Mutabakat Kalem Detayları"""
@@ -414,4 +415,41 @@ class KVKKConsentDeletionLog(Base):
     # İlişkiler
     user = relationship("User", foreign_keys=[user_id])
     deleted_by = relationship("User", foreign_keys=[deleted_by_user_id])
+
+class SMSVerificationLog(Base):
+    """SMS Doğrulama Logları - Yasal Delil için SMS Gönderim Kayıtları"""
+    __tablename__ = "sms_verification_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Mutabakat Bilgisi
+    mutabakat_id = Column(Integer, ForeignKey("mutabakats.id", ondelete="CASCADE"), nullable=False, index=True)
+    approval_token = Column(String(100), index=True, nullable=False)  # SMS'te gönderilen token
+    
+    # SMS Bilgileri
+    phone = Column(String(20), nullable=False, index=True)  # Gönderilen telefon numarası
+    receiver_name = Column(String(255))  # Alıcı adı (müşteri/bayi)
+    sms_message = Column(Text)  # Gönderilen SMS mesajı (şifrelenmemiş)
+    
+    # ISP Bilgileri (SMS gönderilirken kaydedilen IP bilgisi - yasal delil)
+    ip_address = Column(String(50), index=True)  # SMS gönderim anındaki IP
+    isp = Column(String(255))  # Internet Service Provider
+    city = Column(String(255))  # Şehir
+    country = Column(String(255))  # Ülke
+    organization = Column(String(255))  # ISP Organizasyonu
+    user_agent = Column(String(500))  # User agent (varsa)
+    
+    # SMS Gönderim Durumu
+    sent_at = Column(DateTime, default=get_turkey_time, nullable=False, index=True)  # SMS gönderim zamanı
+    sms_provider = Column(String(50), default='goldsms')  # SMS sağlayıcı (GoldSMS, NetGSM, vb.)
+    sms_status = Column(String(50), default='sent')  # sent, failed, delivered
+    sms_provider_id = Column(String(255))  # SMS sağlayıcıdan gelen ID (varsa)
+    error_message = Column(Text, nullable=True)  # Hata mesajı (varsa)
+    
+    # Token Kullanım Bilgisi (SMS'teki link kullanıldı mı?)
+    token_used = Column(Boolean, default=False, index=True)  # Token kullanıldı mı?
+    token_used_at = Column(DateTime, nullable=True)  # Token kullanım zamanı
+    
+    # İlişkiler
+    mutabakat = relationship("Mutabakat", back_populates="sms_logs")
 

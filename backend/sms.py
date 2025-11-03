@@ -237,7 +237,9 @@ class GoldSMS:
             f"{approval_link}"
         )
         
-        return self.send_sms(phone, message)
+        # SMS gönder ve sonucu döndür (log için)
+        success = self.send_sms(phone, message)
+        return success, message  # (başarı, mesaj) tuple döndür
     
     def send_mutabakat_approved(
         self,

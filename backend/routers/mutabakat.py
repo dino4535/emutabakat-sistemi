@@ -519,16 +519,42 @@ def send_mutabakat(
         try:
             receiver_name = receiver.company_name or receiver.full_name or receiver.username
             # Şirket bazlı SMS başlığı için company ile örnek oluştur
-            from backend.models import Company
+            from backend.models import Company, SMSVerificationLog
             from backend.sms import GoldSMS
             company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
-            GoldSMS(company).send_mutabakat_notification(
+            
+            # IP bilgisini al (yasal delil için)
+            ip_info = get_real_ip_with_isp(request)
+            
+            # SMS gönder
+            sms_result, sms_message = GoldSMS(company).send_mutabakat_notification(
                 phone=receiver.phone,
                 customer_name=receiver_name,
                 mutabakat_no=mutabakat.mutabakat_no,
                 amount=abs(mutabakat.bakiye),
                 approval_token=approval_token  # Token'ı SMS'e ekle
             )
+            
+            # SMS Log kaydı oluştur (yasal delil için)
+            sms_log = SMSVerificationLog(
+                mutabakat_id=mutabakat.id,
+                approval_token=approval_token,
+                phone=receiver.phone,
+                receiver_name=receiver_name,
+                sms_message=sms_message,
+                ip_address=ip_info.get('ip', 'unknown'),
+                isp=ip_info.get('isp', 'Bilinmiyor'),
+                city=ip_info.get('city', 'Bilinmiyor'),
+                country=ip_info.get('country', 'Bilinmiyor'),
+                organization=ip_info.get('org', ip_info.get('organization', 'Bilinmiyor')),
+                user_agent=request.headers.get('User-Agent', ''),
+                sms_status='sent' if sms_result else 'failed',
+                sms_provider='goldsms',
+                error_message=None if sms_result else 'SMS gönderilemedi'
+            )
+            db.add(sms_log)
+            db.commit()
+            
             sms_info = f"SMS başarıyla gönderildi: {receiver.phone}"
         except Exception as e:
             # SMS hatası logla ama işlemi durma
@@ -613,17 +639,40 @@ def send_all_draft_mutabakats(
             if receiver and receiver.phone:
                 try:
                     receiver_name = receiver.company_name or receiver.full_name or receiver.username
-                    from backend.models import Company
+                    from backend.models import Company, SMSVerificationLog
                     from backend.sms import GoldSMS
                     company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
-                    GoldSMS(company).send_mutabakat_notification(
+                    
+                    # SMS gönder
+                    sms_result, sms_message = GoldSMS(company).send_mutabakat_notification(
                         phone=receiver.phone,
                         customer_name=receiver_name,
                         mutabakat_no=mutabakat.mutabakat_no,
                         amount=abs(mutabakat.bakiye),
                         approval_token=approval_token
                     )
-                    sms_sent = True
+                    
+                    # SMS Log kaydı oluştur (yasal delil için)
+                    sms_log = SMSVerificationLog(
+                        mutabakat_id=mutabakat.id,
+                        approval_token=approval_token,
+                        phone=receiver.phone,
+                        receiver_name=receiver_name,
+                        sms_message=sms_message,
+                        ip_address=ip_info.get('ip', 'unknown'),
+                        isp=ip_info.get('isp', 'Bilinmiyor'),
+                        city=ip_info.get('city', 'Bilinmiyor'),
+                        country=ip_info.get('country', 'Bilinmiyor'),
+                        organization=ip_info.get('org', ip_info.get('organization', 'Bilinmiyor')),
+                        user_agent=request.headers.get('User-Agent', ''),
+                        sms_status='sent' if sms_result else 'failed',
+                        sms_provider='goldsms',
+                        error_message=None if sms_result else 'SMS gönderilemedi'
+                    )
+                    db.add(sms_log)
+                    db.commit()
+                    
+                    sms_sent = sms_result
                 except Exception as e:
                     print(f"[TOPLU GONDERIM] SMS hatasi: {e}")
             

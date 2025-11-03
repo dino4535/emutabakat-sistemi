@@ -123,6 +123,16 @@ def approve_or_reject_by_token(
         # Token'ı kullanıldı olarak işaretle
         mark_token_as_used(db, token)
         
+        # SMS Log'u güncelle (token kullanıldı)
+        from backend.models import SMSVerificationLog
+        from datetime import datetime
+        sms_log = db.query(SMSVerificationLog).filter(
+            SMSVerificationLog.approval_token == token
+        ).first()
+        if sms_log:
+            sms_log.token_used = True
+            sms_log.token_used_at = datetime.utcnow()
+        
         db.commit()
         db.refresh(mutabakat)
         

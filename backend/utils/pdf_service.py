@@ -678,16 +678,80 @@ class MutabakatPDFGenerator:
         
         story.append(Spacer(1, 1*cm))
         
-        # ========== KURUMSAL BİLGİLENDİRME VE DİJİTAL İMZA ==========
-        corporate_divider = ParagraphStyle(
-            name='CorporateDivider',
+        # ========== İNKAR BEYANI (YASAL GEÇERLİLİK İÇİN) ==========
+        inkar_title_style = ParagraphStyle(
+            name='InkarTitleStyle',
             alignment=TA_CENTER,
-            fontSize=9,
-            textColor=colors.HexColor('#2c5282'),
+            fontSize=10,
+            textColor=colors.HexColor('#c53030'),
             fontName=table_font_bold,
             spaceAfter=8
         )
         
+        inkar_text_style = ParagraphStyle(
+            name='InkarTextStyle',
+            alignment=TA_JUSTIFY,
+            fontSize=9,
+            textColor=colors.HexColor('#2d3748'),
+            fontName=table_font,
+            spaceAfter=10,
+            leading=14,
+            leftIndent=0.5*cm,
+            rightIndent=0.5*cm
+        )
+        
+        story.append(Paragraph(
+            ensure_unicode("<b>⚠️ İNKAR BEYANI VE YASAL KABUL</b>"),
+            inkar_title_style
+        ))
+        story.append(Spacer(1, 0.3*cm))
+        
+        # Onay tarihi ve kullanıcı bilgisi
+        action_timestamp = action_data.get('timestamp', get_turkey_time().strftime('%d.%m.%Y %H:%M:%S'))
+        action_user = action_data.get('user_name', 'Bilinmeyen Kullanıcı')
+        ip_address = action_data.get('ip_address', 'Bilinmiyor')
+        ip_info_dict = action_data.get('ip_info', {})
+        isp_info = ip_info_dict.get('isp', 'Bilinmiyor') if isinstance(ip_info_dict, dict) else 'Bilinmiyor'
+        city_info = ip_info_dict.get('city', 'Bilinmiyor') if isinstance(ip_info_dict, dict) else 'Bilinmiyor'
+        
+        story.append(Paragraph(
+            ensure_unicode(
+                f"<b>Onay Bilgileri:</b><br/>"
+                f"• Onay Tarihi: {action_timestamp}<br/>"
+                f"• Onaylayan: {action_user}<br/>"
+                f"• IP Adresi: {ip_address}<br/>"
+                f"• İnternet Sağlayıcı (ISP): {isp_info}<br/>"
+                f"• Konum: {city_info}"
+            ),
+            inkar_text_style
+        ))
+        story.append(Spacer(1, 0.4*cm))
+        
+        # İnkar beyanı metni
+        story.append(Paragraph(
+            ensure_unicode(
+                "<b>YASAL İNKAR BEYANI:</b><br/><br/>"
+                "Bu elektronik mutabakat belgesi, yukarıda belirtilen tarih ve saatte elektronik ortamda "
+                f"{action_user} tarafından {ip_address} IP adresinden onaylanmıştır. "
+                f"Onay işlemi, {isp_info} internet sağlayıcısı üzerinden gerçekleştirilmiştir.<br/><br/>"
+                "Taraflar, bu onayın hukuki geçerliliğini kabul eder ve sonradan bu mutabakatı inkar edemeyeceğini, "
+                "'SMS almadım', 'Link açmadım', 'Onay vermedim' gibi iddialarda bulunamayacağını taahhüt eder.<br/><br/>"
+                "Bu belge, <b>Türk Ticaret Kanunu (TTK) Madde 18/3</b>, <b>Türk Borçlar Kanunu (TBK) Madde 88</b> "
+                "ve <b>Elektronik İmza Kanunu (5070 sayılı Kanun) Madde 5</b> hükümleri kapsamında geçerlidir.<br/><br/>"
+                "Belge, sistem kayıtları, SMS gönderim logları, IP adresi ve ISP bilgileri ile desteklenmekte olup, "
+                "mahkeme ve yasal otoriteler tarafından delil olarak kabul edilir."
+            ),
+            inkar_text_style
+        ))
+        story.append(Spacer(1, 0.6*cm))
+        
+        story.append(Paragraph(
+            "═════════════════════════════════════════════════════════════════",
+            corporate_divider
+        ))
+        story.append(Spacer(1, 0.5*cm))
+        
+        # ========== KURUMSAL BİLGİLENDİRME VE DİJİTAL İMZA ==========
         story.append(Paragraph(
             "═════════════════════════════════════════════════════════════════",
             corporate_divider

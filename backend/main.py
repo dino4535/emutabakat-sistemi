@@ -7,6 +7,10 @@ from backend.logger import logger
 import os
 from dotenv import load_dotenv
 
+# Tüm modelleri import et (SQLAlchemy tablo oluşturması için)
+# Bu sayede init_db() çağrıldığında tüm tablolar oluşturulur
+import backend.models  # noqa: F401 - Tüm modelleri yükle (SMSVerificationLog dahil)
+
 load_dotenv()
 
 app = FastAPI(
