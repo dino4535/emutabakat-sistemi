@@ -493,19 +493,20 @@ class MutabakatPDFGenerator:
             bayi_header = [ensure_unicode('Bayi Kodu'), ensure_unicode('Bayi Adı'), ensure_unicode('Bakiye (₺)')]
             bayi_rows = [bayi_header]
             
+            # Paragraph style for wrapping
+            wrap_style = ParagraphStyle(
+                'WrapText',
+                parent=styles['Normal'],
+                fontName=table_font,
+                fontSize=8,
+                leading=10,
+                wordWrap='CJK',
+                splitLongWords=True
+            )
+            
             for bayi in mutabakat_data['bayi_detaylari']:
                 # Uzun bayi isimlerini Paragraph ile wrap et
-                bayi_adi_para = Paragraph(
-                    ensure_unicode(bayi['bayi_adi']),
-                    ParagraphStyle(
-                        'BayiAdi',
-                        parent=styles['Normal'],
-                        fontName=table_font,
-                        fontSize=9,
-                        leading=11,
-                        wordWrap='LTR'
-                    )
-                )
+                bayi_adi_para = Paragraph(ensure_unicode(bayi['bayi_adi']), wrap_style)
                 bayi_rows.append([
                     ensure_unicode(bayi['bayi_kodu']),
                     bayi_adi_para,
@@ -519,7 +520,7 @@ class MutabakatPDFGenerator:
                 f"{mutabakat_data['bakiye']:,.2f}"
             ])
             
-            bayi_table = Table(bayi_rows, colWidths=[2.5*cm, 11*cm, 3.5*cm])
+            bayi_table = Table(bayi_rows, colWidths=[2*cm, 10.5*cm, 3.5*cm])
             bayi_table.setStyle(TableStyle([
                 # Header
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4299e1')),
@@ -591,19 +592,30 @@ class MutabakatPDFGenerator:
             ip_display = ip_info.get('ip', action_data.get('ip_address', 'Bilinmiyor'))
             isp_info = f"{ip_info.get('isp', 'Bilinmiyor')} - {ip_info.get('city', '')}, {ip_info.get('country', '')}"
         
+        # Wrap style for long text
+        cell_wrap_style = ParagraphStyle(
+            'CellWrap',
+            parent=styles['Normal'],
+            fontName=table_font,
+            fontSize=9,
+            leading=11,
+            wordWrap='CJK',
+            splitLongWords=True
+        )
+        
         islem_data = [
-            [ensure_unicode('İşlem Yapan:'), ensure_unicode(action_data['user_name'])],
+            [ensure_unicode('İşlem Yapan:'), Paragraph(ensure_unicode(action_data['user_name']), cell_wrap_style)],
             [ensure_unicode('İşlem Tarihi:'), action_data['timestamp']],
             [ensure_unicode('IP Adresi:'), ensure_unicode(ip_display)],
         ]
         
         # ISP bilgisi varsa ekle (yasal delil)
         if isp_info and isp_info != 'Bilinmiyor - , ':
-            islem_data.append([ensure_unicode('İnternet Sağlayıcı (ISP):'), ensure_unicode(isp_info)])
+            islem_data.append([ensure_unicode('İnternet Sağlayıcı (ISP):'), Paragraph(ensure_unicode(isp_info), cell_wrap_style)])
         
         islem_data.append([ensure_unicode('Dijital İmza (SHA-256):'), digital_signature[:32] + '...'])
         
-        islem_table = Table(islem_data, colWidths=[5*cm, 12*cm])
+        islem_table = Table(islem_data, colWidths=[4.5*cm, 11.5*cm])
         islem_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#fff5f5')),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -630,10 +642,12 @@ class MutabakatPDFGenerator:
             ensure_unicode("Madde 18/3: Ticari defterler ve belgeler, Türkiye'de bulunan ve kanuni yollara başvurma hakkı saklı kalmak kaydıyla, aksine delil getirilinceye kadar, sicile kayıtlı tacirler arasındaki ticari ilişkilerden doğan davalarında delil teşkil eder."),
             styles['LegalText']
         ))
+        story.append(Spacer(1, 0.3*cm))
         story.append(Paragraph(
-            ensure_unicode("Madde 93: Mutabakat veya itirazınızı 7 gün içinde bildirmediğiniz takdirde T.T.K'nun 93. maddesi gereğince mutabık sayılacağınızı hatırlatırız."),
+            ensure_unicode("<b>Madde 93:</b> Mutabakat veya itirazınızı 7 gün içinde bildirmediğiniz takdirde T.T.K'nun 93. maddesi gereğince mutabık sayılacağınızı hatırlatırız."),
             styles['LegalText']
         ))
+        story.append(Spacer(1, 0.4*cm))
         
         story.append(Paragraph(
             ensure_unicode("<b>2. Türk Borçlar Kanunu (TBK) - Kanun No: 6098</b>"),
