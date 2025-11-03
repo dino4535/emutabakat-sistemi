@@ -16,6 +16,8 @@ from backend.auth import (
 from backend.logger import ActivityLogger
 from backend.middleware.rate_limiter import RateLimiter, RateLimitRules
 from backend.utils.failed_login_tracker import FailedLoginTracker
+from backend.utils.audit_logger import log_login_attempt, create_audit_log
+from backend.models import AuditLogAction
 import requests
 
 router = APIRouter(prefix="/api/auth", tags=["Kimlik Doğrulama"])
@@ -162,6 +164,17 @@ async def login(
             failure_reason="User not found"
         )
         
+        # Audit log kaydı
+        log_login_attempt(
+            db=db,
+            username=form_data.username,
+            success=False,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            error_message="Kullanıcı bulunamadı",
+            ip_info=ip_info
+        )
+        
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Kullanıcı bulunamadı",
@@ -187,6 +200,18 @@ async def login(
             user_agent=user_agent,
             isp_info=ip_info,
             failure_reason="Wrong password"
+        )
+        
+        # Audit log kaydı
+        log_login_attempt(
+            db=db,
+            username=users[0].username,
+            success=False,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            error_message="Şifre hatalı",
+            user=users[0],
+            ip_info=ip_info
         )
         
         raise HTTPException(
@@ -290,6 +315,17 @@ async def login(
         ip_info=ip_info,
         user_agent=request.headers.get("user-agent", ""),
         company_id=user.company_id  # Multi-company için
+    )
+    
+    # Audit log kaydı (başarılı login)
+    log_login_attempt(
+        db=db,
+        username=user.username,
+        success=True,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        user=user,
+        ip_info=ip_info
     )
     
     return {
@@ -431,6 +467,17 @@ async def login_select_company(
         ip_info=ip_info,
         user_agent=request.headers.get("user-agent", ""),
         company_id=user.company_id
+    )
+    
+    # Audit log kaydı (başarılı login - şirket seçimi)
+    log_login_attempt(
+        db=db,
+        username=user.username,
+        success=True,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        user=user,
+        ip_info=ip_info
     )
     
     return {

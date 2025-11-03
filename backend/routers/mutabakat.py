@@ -17,6 +17,8 @@ from backend.auth import get_current_active_user
 from backend.logger import ActivityLogger
 from backend.middleware.rate_limiter import RateLimiter, RateLimitRules
 from backend.sms import sms_service
+from backend.utils.audit_logger import log_mutabakat_action, create_audit_log
+from backend.models import AuditLogAction
 from backend.utils.pdf_service import create_mutabakat_pdf
 from backend.utils.pdf_signer import pdf_signer
 from backend.utils.pdf_permissions import apply_pdf_permissions

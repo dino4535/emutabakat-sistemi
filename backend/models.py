@@ -419,18 +419,18 @@ class KVKKConsentDeletionLog(Base):
 class SMSVerificationLog(Base):
     """SMS Doğrulama Logları - Yasal Delil için SMS Gönderim Kayıtları"""
     __tablename__ = "sms_verification_logs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    
+
     # Mutabakat Bilgisi
     mutabakat_id = Column(Integer, ForeignKey("mutabakats.id", ondelete="CASCADE"), nullable=False, index=True)
     approval_token = Column(String(100), index=True, nullable=False)  # SMS'te gönderilen token
-    
+
     # SMS Bilgileri
     phone = Column(String(20), nullable=False, index=True)  # Gönderilen telefon numarası
     receiver_name = Column(String(255))  # Alıcı adı (müşteri/bayi)
     sms_message = Column(Text)  # Gönderilen SMS mesajı (şifrelenmemiş)
-    
+
     # ISP Bilgileri (SMS gönderilirken kaydedilen IP bilgisi - yasal delil)
     ip_address = Column(String(50), index=True)  # SMS gönderim anındaki IP
     isp = Column(String(255))  # Internet Service Provider
@@ -438,18 +438,141 @@ class SMSVerificationLog(Base):
     country = Column(String(255))  # Ülke
     organization = Column(String(255))  # ISP Organizasyonu
     user_agent = Column(String(500))  # User agent (varsa)
-    
+
     # SMS Gönderim Durumu
     sent_at = Column(DateTime, default=get_turkey_time, nullable=False, index=True)  # SMS gönderim zamanı
     sms_provider = Column(String(50), default='goldsms')  # SMS sağlayıcı (GoldSMS, NetGSM, vb.)
     sms_status = Column(String(50), default='sent')  # sent, failed, delivered
     sms_provider_id = Column(String(255))  # SMS sağlayıcıdan gelen ID (varsa)
     error_message = Column(Text, nullable=True)  # Hata mesajı (varsa)
-    
+
     # Token Kullanım Bilgisi (SMS'teki link kullanıldı mı?)
     token_used = Column(Boolean, default=False, index=True)  # Token kullanıldı mı?
     token_used_at = Column(DateTime, nullable=True)  # Token kullanım zamanı
-    
+
     # İlişkiler
     mutabakat = relationship("Mutabakat", back_populates="sms_logs")
+
+
+class AuditLogAction(str, enum.Enum):
+    """Audit Log İşlem Türleri"""
+    # Kimlik Doğrulama
+    LOGIN = "login"
+    LOGOUT = "logout"
+    LOGIN_FAILED = "login_failed"
+    PASSWORD_CHANGE = "password_change"
+    
+    # Mutabakat İşlemleri
+    MUTABAKAT_CREATE = "mutabakat_create"
+    MUTABAKAT_UPDATE = "mutabakat_update"
+    MUTABAKAT_DELETE = "mutabakat_delete"
+    MUTABAKAT_SEND = "mutabakat_send"
+    MUTABAKAT_APPROVE = "mutabakat_approve"
+    MUTABAKAT_REJECT = "mutabakat_reject"
+    MUTABAKAT_CANCEL = "mutabakat_cancel"
+    MUTABAKAT_VIEW = "mutabakat_view"
+    MUTABAKAT_DOWNLOAD_PDF = "mutabakat_download_pdf"
+    
+    # Kullanıcı Yönetimi
+    USER_CREATE = "user_create"
+    USER_UPDATE = "user_update"
+    USER_DELETE = "user_delete"
+    USER_ACTIVATE = "user_activate"
+    USER_DEACTIVATE = "user_deactivate"
+    
+    # Bayi/Müşteri Yönetimi
+    BAYI_CREATE = "bayi_create"
+    BAYI_UPDATE = "bayi_update"
+    BAYI_DELETE = "bayi_delete"
+    BAYI_IMPORT = "bayi_import"
+    
+    # Şirket Yönetimi
+    COMPANY_CREATE = "company_create"
+    COMPANY_UPDATE = "company_update"
+    COMPANY_DELETE = "company_delete"
+    COMPANY_SETTINGS_UPDATE = "company_settings_update"
+    
+    # KVKK İşlemleri
+    KVKK_CONSENT_GIVEN = "kvkk_consent_given"
+    KVKK_CONSENT_WITHDRAWN = "kvkk_consent_withdrawn"
+    KVKK_DATA_EXPORT = "kvkk_data_export"
+    KVKK_DATA_DELETE = "kvkk_data_delete"
+    
+    # Sistem İşlemleri
+    SYSTEM_BACKUP = "system_backup"
+    SYSTEM_RESTORE = "system_restore"
+    DATABASE_MIGRATION = "database_migration"
+    
+    # Raporlar
+    REPORT_GENERATE = "report_generate"
+    REPORT_EXPORT = "report_export"
+    
+    # API İşlemleri
+    API_ACCESS = "api_access"
+    API_ERROR = "api_error"
+    
+    # Güvenlik
+    UNAUTHORIZED_ACCESS = "unauthorized_access"
+    SUSPICIOUS_ACTIVITY = "suspicious_activity"
+
+
+class AuditLog(Base):
+    """
+    Audit Log - Tüm Kritik İşlemlerin Kaydı
+    Yasal gereklilikler ve güvenlik için tüm önemli işlemler loglanır.
+    """
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # İşlem Bilgileri
+    action = Column(Enum(AuditLogAction), nullable=False, index=True)  # İşlem türü
+    action_description = Column(Text)  # İşlem açıklaması
+    status = Column(String(20), default='success', index=True)  # success, failed, error
+    
+    # Kullanıcı Bilgileri
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    username = Column(String(100), index=True)  # Kullanıcı adı (user silinirse bile kayıt kalsın)
+    user_role = Column(String(50))  # Kullanıcı rolü
+    
+    # Şirket Bilgileri
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="SET NULL"), nullable=True, index=True)
+    company_name = Column(String(255))  # Şirket adı (company silinirse bile kayıt kalsın)
+    
+    # İlişkili Kayıt Bilgileri
+    target_model = Column(String(100))  # İşlem yapılan model (örn: Mutabakat, User, Bayi)
+    target_id = Column(Integer, index=True)  # İşlem yapılan kaydın ID'si
+    target_identifier = Column(String(255))  # İşlem yapılan kaydın tanımlayıcısı (örn: mutabakat_no, VKN)
+    
+    # Değişiklik Bilgileri (JSON formatında)
+    old_values = Column(Text)  # Eski değerler (JSON)
+    new_values = Column(Text)  # Yeni değerler (JSON)
+    
+    # IP ve Konum Bilgileri
+    ip_address = Column(String(50), index=True)  # İşlemi yapan IP adresi
+    user_agent = Column(String(500))  # Browser/Client bilgisi
+    isp = Column(String(255))  # Internet Service Provider
+    city = Column(String(255))  # Şehir
+    country = Column(String(255))  # Ülke
+    
+    # HTTP Request Bilgileri
+    http_method = Column(String(10))  # GET, POST, PUT, DELETE
+    endpoint = Column(String(500))  # API endpoint
+    request_data = Column(Text)  # Request payload (hassas bilgiler hariç)
+    response_status = Column(Integer)  # HTTP response status code
+    
+    # Hata Bilgileri
+    error_message = Column(Text)  # Hata mesajı (varsa)
+    error_traceback = Column(Text)  # Hata detayı (varsa)
+    
+    # Zaman Bilgileri
+    created_at = Column(DateTime, default=get_turkey_time, nullable=False, index=True)
+    duration_ms = Column(Integer)  # İşlem süresi (milisaniye)
+    
+    # İlişkiler
+    user = relationship("User", foreign_keys=[user_id])
+    company = relationship("Company", foreign_keys=[company_id])
+    
+    def __repr__(self):
+        return f"<AuditLog {self.action} by {self.username} at {self.created_at}>"
 
