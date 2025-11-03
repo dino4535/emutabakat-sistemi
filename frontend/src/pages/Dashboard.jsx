@@ -6,6 +6,7 @@ import AnimatedCounter from '../components/AnimatedCounter'
 import TrendIndicator from '../components/TrendIndicator'
 import QuickActions from '../components/QuickActions'
 import RecentActivities from '../components/RecentActivities'
+import RecentAuditLogs from '../components/RecentAuditLogs'
 import SkeletonLoader from '../components/SkeletonLoader'
 import './Dashboard.css'
 
@@ -182,6 +183,13 @@ export default function Dashboard() {
         <QuickActions userRole={user?.role} />
         <RecentActivities />
       </div>
+
+      {/* Audit Logs (Sadece Admin) */}
+      {['admin', 'company_admin'].includes(user?.role) && (
+        <div className="dashboard-bottom" style={{ marginTop: '24px' }}>
+          <RecentAuditLogs />
+        </div>
+      )}
     </div>
   )
 }
