@@ -252,6 +252,16 @@ class MutabakatPDFGenerator:
             table_font = 'Helvetica'
             table_font_bold = 'Helvetica-Bold'
         
+        # Kurumsal ayraç stili (tüm fonksiyon boyunca kullanılacak)
+        corporate_divider = ParagraphStyle(
+            name='CorporateDivider',
+            alignment=TA_CENTER,
+            fontSize=9,
+            textColor=colors.HexColor('#2c5282'),
+            fontName=table_font_bold,
+            spaceAfter=8
+        )
+        
         # Dijital imza oluştur
         digital_signature = self._generate_digital_signature(mutabakat_data, action_data)
         
