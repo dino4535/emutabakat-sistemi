@@ -49,8 +49,23 @@ class PDFSigner:
         if cache_key in self._signer_cache:
             return self._signer_cache[cache_key]
         
+        # Yol normalizasyonu: ters eğik çizgileri düzelt, sadece dosya adı ise 'certificates/' öne ekle
+        norm_path_str = (cert_path or "").replace("\\", "/").strip()
+        if not norm_path_str:
+            print("[DIJITAL IMZA] Sertifika yolu bos")
+            return None
+        # Absolute değilse ve 'certificates/' ile başlamıyorsa öne ekle
+        if not Path(norm_path_str).is_absolute() and not norm_path_str.startswith("certificates/"):
+            norm_path_str = f"certificates/{norm_path_str}"
+
         # Tam yol oluştur
-        full_path = self.project_root / cert_path if not Path(cert_path).is_absolute() else Path(cert_path)
+        full_path = self.project_root / norm_path_str if not Path(norm_path_str).is_absolute() else Path(norm_path_str)
+
+        # Eğer verilen yol yoksa, aynı dosyayı cert_dir altında aramayı dene (ek güvenlik)
+        if not full_path.exists():
+            candidate = self.cert_dir / Path(norm_path_str).name
+            if candidate.exists():
+                full_path = candidate
         
         if not full_path.exists():
             print(f"[DIJITAL IMZA] Sertifika bulunamadi: {full_path}")
