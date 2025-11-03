@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
-import { FaHome, FaFileAlt, FaPlus, FaSignOutAlt, FaUser, FaUsers, FaCog, FaChartLine, FaBars, FaShieldAlt, FaUserCog, FaBell, FaSearch, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaStore, FaGavel, FaBuilding } from 'react-icons/fa'
+import { FaHome, FaFileAlt, FaPlus, FaSignOutAlt, FaUser, FaUsers, FaCog, FaChartLine, FaBars, FaShieldAlt, FaUserCog, FaBell, FaSearch, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaStore, FaGavel, FaBuilding, FaHistory } from 'react-icons/fa'
 import { Notification } from './Notification'
 import { useSwipe } from '../hooks/useSwipe'
 import './Layout.css'
@@ -296,6 +296,13 @@ export default function Layout() {
                 >
                   <FaUserCog />
                   <span>Kullanıcılar</span>
+                </Link>
+                <Link
+                  to="/audit-logs"
+                  className={`nav-link ${isActive('/audit-logs') ? 'active' : ''}`}
+                >
+                  <FaHistory />
+                  <span>Audit Logs</span>
                 </Link>
               </div>
             )}

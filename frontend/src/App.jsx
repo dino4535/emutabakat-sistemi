@@ -20,6 +20,7 @@ import LegalReports from './pages/LegalReports'
 import VerifySignature from './pages/VerifySignature'
 import UserManagement from './pages/UserManagement'
 import CompanyManagement from './pages/CompanyManagement'
+import AuditLogs from './pages/AuditLogs'
 import KVKKPopup from './components/KVKKPopup'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -120,6 +121,7 @@ function App() {
           <Route path="verify" element={<VerifySignature />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="companies" element={<CompanyManagement />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
