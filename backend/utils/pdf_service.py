@@ -494,9 +494,21 @@ class MutabakatPDFGenerator:
             bayi_rows = [bayi_header]
             
             for bayi in mutabakat_data['bayi_detaylari']:
+                # Uzun bayi isimlerini Paragraph ile wrap et
+                bayi_adi_para = Paragraph(
+                    ensure_unicode(bayi['bayi_adi']),
+                    ParagraphStyle(
+                        'BayiAdi',
+                        parent=styles['Normal'],
+                        fontName=table_font,
+                        fontSize=9,
+                        leading=11,
+                        wordWrap='LTR'
+                    )
+                )
                 bayi_rows.append([
                     ensure_unicode(bayi['bayi_kodu']),
-                    ensure_unicode(bayi['bayi_adi']),
+                    bayi_adi_para,
                     f"{bayi['bakiye']:,.2f}"
                 ])
             
@@ -507,7 +519,7 @@ class MutabakatPDFGenerator:
                 f"{mutabakat_data['bakiye']:,.2f}"
             ])
             
-            bayi_table = Table(bayi_rows, colWidths=[3*cm, 10*cm, 4*cm])
+            bayi_table = Table(bayi_rows, colWidths=[2.5*cm, 11*cm, 3.5*cm])
             bayi_table.setStyle(TableStyle([
                 # Header
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4299e1')),
@@ -515,8 +527,10 @@ class MutabakatPDFGenerator:
                 ('FONTNAME', (0, 0), (-1, 0), table_font_bold),
                 # Body
                 ('FONTNAME', (0, 1), (-1, -2), table_font),
-                ('ALIGN', (0, 0), (1, -1), 'LEFT'),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'LEFT'),
                 ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Üstten hizala
                 ('FONTSIZE', (0, 0), (-1, -1), 9),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
@@ -614,6 +628,10 @@ class MutabakatPDFGenerator:
         ))
         story.append(Paragraph(
             ensure_unicode("Madde 18/3: Ticari defterler ve belgeler, Türkiye'de bulunan ve kanuni yollara başvurma hakkı saklı kalmak kaydıyla, aksine delil getirilinceye kadar, sicile kayıtlı tacirler arasındaki ticari ilişkilerden doğan davalarında delil teşkil eder."),
+            styles['LegalText']
+        ))
+        story.append(Paragraph(
+            ensure_unicode("Madde 93: Mutabakat veya itirazınızı 7 gün içinde bildirmediğiniz takdirde T.T.K'nun 93. maddesi gereğince mutabık sayılacağınızı hatırlatırız."),
             styles['LegalText']
         ))
         
