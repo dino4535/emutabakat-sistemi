@@ -10,6 +10,8 @@ from typing import List, Dict, Any, Optional
 from fastapi.responses import StreamingResponse
 import csv
 import io
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
 
@@ -900,4 +902,180 @@ def get_day_hour_heatmap(
         "totals_by_day": totals_by_day,
         "totals_by_hour": totals_by_hour
     }
+
+@router.get("/mutabakat-list/export.xlsx")
+def export_mutabakat_list_excel(
+    period: Optional[str] = Query(None, description="Dönem filtresi (MM/YYYY formatında, örn: 11/2025)"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Mutabakat listesini Excel olarak export et (dönem filtresi ile)
+    Alıcının VKN'si dahil
+    """
+    # Company ID bazlı filtreleme
+    mutabakat_company_filter = Mutabakat.company_id == current_user.company_id if current_user.role == UserRole.COMPANY_ADMIN else True
+    
+    # Dönem filtresini hazırla (donem_bitis alanına göre)
+    date_filters = []
+    if period:
+        try:
+            # MM/YYYY formatından ayrıştır
+            month_str, year_str = period.split('/')
+            month = int(month_str)
+            year = int(year_str)
+            
+            # O ayın başlangıç ve bitiş tarihleri
+            start_of_month = datetime(year, month, 1, 0, 0, 0)
+            if month == 12:
+                end_of_month = datetime(year + 1, 1, 1, 0, 0, 0)
+            else:
+                end_of_month = datetime(year, month + 1, 1, 0, 0, 0)
+            
+            # donem_bitis alanı bu ay içinde olan mutabakatlar
+            date_filters.append(Mutabakat.donem_bitis >= start_of_month)
+            date_filters.append(Mutabakat.donem_bitis < end_of_month)
+        except (ValueError, AttributeError):
+            pass
+    
+    # Mutabakatları çek
+    query = db.query(Mutabakat).filter(
+        mutabakat_company_filter
+    )
+    
+    if date_filters:
+        query = query.filter(and_(*date_filters))
+    
+    mutabakats = query.order_by(Mutabakat.created_at.desc()).all()
+    
+    # Excel workbook oluştur
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Mutabakat Listesi"
+    
+    # Stil tanımlamaları
+    header_fill = PatternFill(start_color="667eea", end_color="667eea", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True, size=11)
+    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # Başlıklar
+    headers = [
+        "Mutabakat No",
+        "Oluşturan",
+        "Gönderen/Alıcı",
+        "Alıcının VKN'si",
+        "Dönem Başlangıç",
+        "Dönem Bitiş",
+        "Durum",
+        "Borç (₺)",
+        "Alacak (₺)",
+        "Bakiye (₺)",
+        "Toplam Bayi Sayısı",
+        "Gönderim Tarihi",
+        "Onay Tarihi",
+        "Red Tarihi",
+        "Oluşturulma Tarihi"
+    ]
+    
+    # Başlıkları yaz
+    for col_idx, header in enumerate(headers, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+        cell.border = border
+    
+    # Verileri yaz
+    for row_idx, mutabakat in enumerate(mutabakats, start=2):
+        # Durum metni
+        durum_text = {
+            MutabakatDurumu.TASLAK: "Taslak",
+            MutabakatDurumu.GONDERILDI: "Gönderildi",
+            MutabakatDurumu.ONAYLANDI: "Onaylandı",
+            MutabakatDurumu.REDDEDILDI: "Reddedildi",
+            MutabakatDurumu.IPTAL: "İptal"
+        }.get(mutabakat.durum, str(mutabakat.durum))
+        
+        # Kullanıcı bilgileri
+        sender_name = mutabakat.sender.company_name or mutabakat.sender.full_name or mutabakat.sender.username if mutabakat.sender else "-"
+        receiver_name = mutabakat.receiver.company_name or mutabakat.receiver.full_name or mutabakat.receiver.username if mutabakat.receiver else "-"
+        receiver_vkn = mutabakat.receiver_vkn if mutabakat.receiver_vkn else (mutabakat.receiver.vkn_tckn if mutabakat.receiver else "-")
+        
+        # Tarih formatlama
+        def format_date(dt):
+            if dt:
+                return dt.strftime("%d.%m.%Y %H:%M")
+            return "-"
+        
+        data = [
+            mutabakat.mutabakat_no,
+            sender_name,
+            receiver_name,
+            receiver_vkn,
+            format_date(mutabakat.donem_baslangic),
+            format_date(mutabakat.donem_bitis),
+            durum_text,
+            round(mutabakat.toplam_borc or 0, 2),
+            round(mutabakat.toplam_alacak or 0, 2),
+            round(mutabakat.bakiye or 0, 2),
+            mutabakat.toplam_bayi_sayisi or 0,
+            format_date(mutabakat.gonderim_tarihi),
+            format_date(mutabakat.onay_tarihi),
+            format_date(mutabakat.red_tarihi),
+            format_date(mutabakat.created_at)
+        ]
+        
+        for col_idx, value in enumerate(data, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.border = border
+            cell.alignment = Alignment(horizontal="left", vertical="center")
+            
+            # Sayısal sütunlar için sağa hizalama
+            if col_idx in [8, 9, 10, 11]:  # Borç, Alacak, Bakiye, Bayi Sayısı
+                cell.alignment = Alignment(horizontal="right", vertical="center")
+                if col_idx in [8, 9, 10]:  # Para birimi sütunları
+                    cell.number_format = '#,##0.00'
+    
+    # Sütun genişliklerini ayarla
+    column_widths = {
+        'A': 20,  # Mutabakat No
+        'B': 30,  # Oluşturan
+        'C': 30,  # Gönderen/Alıcı
+        'D': 15,  # Alıcının VKN'si
+        'E': 18,  # Dönem Başlangıç
+        'F': 18,  # Dönem Bitiş
+        'G': 12,  # Durum
+        'H': 15,  # Borç
+        'I': 15,  # Alacak
+        'J': 15,  # Bakiye
+        'K': 15,  # Bayi Sayısı
+        'L': 18,  # Gönderim Tarihi
+        'M': 18,  # Onay Tarihi
+        'N': 18,  # Red Tarihi
+        'O': 18   # Oluşturulma Tarihi
+    }
+    
+    for col, width in column_widths.items():
+        ws.column_dimensions[col].width = width
+    
+    # Excel dosyasını memory'de oluştur
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    # Dosya adı
+    period_str = period.replace('/', '-') if period else "tum-donemler"
+    filename = f"mutabakat-listesi-{period_str}.xlsx"
+    
+    return StreamingResponse(
+        io.BytesIO(output.read()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 

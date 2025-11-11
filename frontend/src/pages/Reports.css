@@ -1157,3 +1157,67 @@
     font-size: 9px;
   }
 }
+
+/* Excel Export Panel */
+.export-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+}
+
+.export-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-controls label {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.export-select {
+  padding: 10px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 150px;
+}
+
+.export-select:hover {
+  border-color: var(--primary-color);
+}
+
+.export-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 768px) {
+  .export-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .export-controls label {
+    margin-bottom: 8px;
+  }
+
+  .export-select {
+    width: 100%;
+  }
+
+  .export-controls button {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+}

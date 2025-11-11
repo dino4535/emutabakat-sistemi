@@ -18,6 +18,7 @@ export default function Reports() {
   const [trendDays, setTrendDays] = useState(90)
   const [trendGroupBy, setTrendGroupBy] = useState('day') // day | week
   const [dayHourDays, setDayHourDays] = useState(30)
+  const [exportPeriod, setExportPeriod] = useState('') // Excel export için dönem seçimi
 
   // Genel istatistikler
   const { data: overview } = useQuery({
@@ -154,6 +155,38 @@ export default function Reports() {
     }
   }
 
+  const handleExportExcel = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const params = new URLSearchParams()
+      if (exportPeriod) {
+        params.append('period', exportPeriod)
+      }
+      
+      const response = await fetch(`/api/reports/mutabakat-list/export.xlsx?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const periodStr = exportPeriod ? exportPeriod.replace('/', '-') : 'tum-donemler'
+      a.download = `mutabakat-listesi-${periodStr}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Excel export hatası:', error)
+      alert('Excel export başarısız oldu')
+    }
+  }
+
   return (
     <div className="reports-page">
       <div className="page-header">
@@ -206,6 +239,39 @@ export default function Reports() {
       {/* Genel Bakış Sekmesi */}
       {activeTab === 'overview' && (
         <div className="tab-content">
+          {/* Excel Export Bölümü */}
+          <div className="stats-section">
+            <h2>Mutabakat Listesi Excel Export</h2>
+            <div className="export-panel">
+              <div className="export-controls">
+                <label>Dönem Seçin (Opsiyonel):</label>
+                <select 
+                  value={exportPeriod} 
+                  onChange={(e) => setExportPeriod(e.target.value)}
+                  className="export-select"
+                >
+                  <option value="">Tüm Dönemler</option>
+                  {availablePeriods?.map(period => (
+                    <option key={period} value={period}>
+                      {period}
+                    </option>
+                  ))}
+                </select>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleExportExcel}
+                  style={{marginLeft: '16px'}}
+                >
+                  <FaDownload /> Excel İndir
+                </button>
+              </div>
+              <p style={{color: 'var(--text-secondary)', marginTop: '8px', fontSize: '14px'}}>
+                Seçilen döneme ait mutabakat listesini Excel formatında indirebilirsiniz. 
+                Alıcının VKN'si dahil tüm detaylar export edilecektir.
+              </p>
+            </div>
+          </div>
+
           {/* Genel İstatistikler */}
           {overview && (
             <div className="stats-section">
