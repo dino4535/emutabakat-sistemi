@@ -8,7 +8,6 @@ import { tr } from 'date-fns/locale'
 import { FaHome, FaFileAlt, FaPlus, FaSignOutAlt, FaUser, FaUsers, FaCog, FaChartLine, FaBars, FaShieldAlt, FaUserCog, FaBell, FaSearch, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaStore, FaGavel, FaBuilding, FaHistory } from 'react-icons/fa'
 import { Notification } from './Notification'
 import { useSwipe } from '../hooks/useSwipe'
-import PushNotificationButton from './PushNotificationButton'
 import './Layout.css'
 
 export default function Layout() {
@@ -332,9 +331,7 @@ export default function Layout() {
                 <FaCog />
                 <span>Profil Ayarları</span>
               </Link>
-              <div className="nav-push-notification">
-                <PushNotificationButton />
-              </div>
+              {/* Push bildirim butonu kaldırıldı */}
             </div>
 
             {/* Mobil için hızlı işlemler */}
