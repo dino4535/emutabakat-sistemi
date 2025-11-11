@@ -598,3 +598,168 @@ def get_period_comparison(
     
     return result
 
+@router.get("/pending-heatmap")
+def get_pending_heatmap(
+    days: int = Query(30, description="Son kaç günlük veri (default: 30)"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Bekleyen Mutabakat Isı Haritası - Multi-Company
+    
+    Returns:
+    - Günlük dağılım (hangi günlerde daha fazla bekleyen var)
+    - Bekleme süresine göre gruplandırma
+    - Müşteri bazlı bekleme süreleri
+    - Renk kodlaması için veriler
+    """
+    from collections import defaultdict
+    
+    # Company ID bazlı filtreleme
+    mutabakat_company_filter = Mutabakat.company_id == current_user.company_id if current_user.role == UserRole.COMPANY_ADMIN else True
+    
+    # Son N gün içinde gönderilen ama henüz onaylanmayan mutabakatlar
+    date_threshold = datetime.utcnow() - timedelta(days=days)
+    
+    pending_mutabakats = db.query(Mutabakat).filter(
+        Mutabakat.durum == MutabakatDurumu.GONDERILDI,
+        Mutabakat.gonderim_tarihi >= date_threshold,
+        mutabakat_company_filter
+    ).all()
+    
+    # Günlük dağılım (gönderim tarihine göre)
+    daily_distribution = defaultdict(int)
+    daily_waiting_times = defaultdict(list)
+    
+    # Bekleme süresine göre gruplandırma
+    waiting_buckets = {
+        "0-1": [],  # 0-1 gün
+        "1-3": [],  # 1-3 gün
+        "3-7": [],  # 3-7 gün
+        "7-14": [], # 7-14 gün
+        "14+": []   # 14+ gün
+    }
+    
+    # Müşteri bazlı bekleme süreleri
+    customer_waiting = defaultdict(lambda: {"count": 0, "total_days": 0, "max_days": 0})
+    
+    now = datetime.utcnow()
+    
+    for mutabakat in pending_mutabakats:
+        if not mutabakat.gonderim_tarihi:
+            continue
+        
+        # Bekleme süresi (gün cinsinden)
+        waiting_days = (now - mutabakat.gonderim_tarihi).days
+        
+        # Günlük dağılım
+        send_date = mutabakat.gonderim_tarihi.date()
+        daily_distribution[str(send_date)] += 1
+        daily_waiting_times[str(send_date)].append(waiting_days)
+        
+        # Bekleme süresine göre gruplandırma
+        if waiting_days <= 1:
+            waiting_buckets["0-1"].append(mutabakat.id)
+        elif waiting_days <= 3:
+            waiting_buckets["1-3"].append(mutabakat.id)
+        elif waiting_days <= 7:
+            waiting_buckets["3-7"].append(mutabakat.id)
+        elif waiting_days <= 14:
+            waiting_buckets["7-14"].append(mutabakat.id)
+        else:
+            waiting_buckets["14+"].append(mutabakat.id)
+        
+        # Müşteri bazlı
+        if mutabakat.receiver:
+            receiver_name = mutabakat.receiver.company_name or mutabakat.receiver.full_name or mutabakat.receiver.username
+            customer_waiting[receiver_name]["count"] += 1
+            customer_waiting[receiver_name]["total_days"] += waiting_days
+            customer_waiting[receiver_name]["max_days"] = max(customer_waiting[receiver_name]["max_days"], waiting_days)
+    
+    # Günlük dağılımı formatla (renk kodlaması ile)
+    daily_data = []
+    for date_str, count in sorted(daily_distribution.items()):
+        avg_waiting = sum(daily_waiting_times[date_str]) / len(daily_waiting_times[date_str]) if daily_waiting_times[date_str] else 0
+        
+        # Renk kodlaması: kırmızı = uzun süre, yeşil = yeni
+        if avg_waiting <= 1:
+            color = "green"
+            intensity = 1
+        elif avg_waiting <= 3:
+            color = "yellow"
+            intensity = 2
+        elif avg_waiting <= 7:
+            color = "orange"
+            intensity = 3
+        else:
+            color = "red"
+            intensity = 4
+        
+        daily_data.append({
+            "date": date_str,
+            "count": count,
+            "avg_waiting_days": round(avg_waiting, 1),
+            "color": color,
+            "intensity": intensity
+        })
+    
+    # Müşteri bazlı verileri formatla
+    customer_data = []
+    for customer_name, data in customer_waiting.items():
+        avg_days = data["total_days"] / data["count"] if data["count"] > 0 else 0
+        
+        # Renk kodlaması
+        if avg_days <= 1:
+            color = "green"
+        elif avg_days <= 3:
+            color = "yellow"
+        elif avg_days <= 7:
+            color = "orange"
+        else:
+            color = "red"
+        
+        customer_data.append({
+            "customer_name": customer_name,
+            "pending_count": data["count"],
+            "avg_waiting_days": round(avg_days, 1),
+            "max_waiting_days": data["max_days"],
+            "color": color
+        })
+    
+    # En uzun bekleyenler (top 10)
+    longest_waiting = sorted(
+        [
+            {
+                "mutabakat_no": m.mutabakat_no,
+                "receiver_name": m.receiver.company_name if m.receiver else "Bilinmiyor",
+                "waiting_days": (now - m.gonderim_tarihi).days,
+                "send_date": m.gonderim_tarihi.isoformat() if m.gonderim_tarihi else None,
+                "amount": float(m.bakiye) if m.bakiye else 0.0
+            }
+            for m in pending_mutabakats
+            if m.gonderim_tarihi
+        ],
+        key=lambda x: x["waiting_days"],
+        reverse=True
+    )[:10]
+    
+    return {
+        "total_pending": len(pending_mutabakats),
+        "waiting_buckets": {
+            bucket: len(ids) for bucket, ids in waiting_buckets.items()
+        },
+        "daily_distribution": daily_data,
+        "customer_waiting": sorted(customer_data, key=lambda x: x["avg_waiting_days"], reverse=True),
+        "longest_waiting": longest_waiting,
+        "summary": {
+            "avg_waiting_days": round(
+                sum((now - m.gonderim_tarihi).days for m in pending_mutabakats if m.gonderim_tarihi) / len([m for m in pending_mutabakats if m.gonderim_tarihi]),
+                1
+            ) if any(m.gonderim_tarihi for m in pending_mutabakats) else 0,
+            "max_waiting_days": max(
+                ((now - m.gonderim_tarihi).days for m in pending_mutabakats if m.gonderim_tarihi),
+                default=0
+            )
+        }
+    }
+

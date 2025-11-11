@@ -3,16 +3,17 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { 
   FaChartLine, FaUsers, FaFileInvoice, FaCheckCircle, FaTimesCircle, 
-  FaClock, FaTrophy, FaFilter, FaSearch, FaChartBar, FaTable 
+  FaClock, FaTrophy, FaFilter, FaSearch, FaChartBar, FaTable, FaFire 
 } from 'react-icons/fa'
 import './Reports.css'
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState('overview') // overview, detailed, period
+  const [activeTab, setActiveTab] = useState('overview') // overview, detailed, period, heatmap
   const [filters, setFilters] = useState({
     userId: '',
     period: ''
   })
+  const [heatmapDays, setHeatmapDays] = useState(30)
 
   // Genel istatistikler
   const { data: overview } = useQuery({
@@ -59,6 +60,15 @@ export default function Reports() {
     queryKey: ['reports-period-comparison'],
     queryFn: async () => {
       const response = await axios.get('/api/reports/period-comparison')
+      return response.data
+    }
+  })
+
+  // Bekleyen mutabakat ısı haritası
+  const { data: heatmapData } = useQuery({
+    queryKey: ['reports-pending-heatmap', heatmapDays],
+    queryFn: async () => {
+      const response = await axios.get(`/api/reports/pending-heatmap?days=${heatmapDays}`)
       return response.data
     }
   })
@@ -126,6 +136,12 @@ export default function Reports() {
           onClick={() => setActiveTab('period')}
         >
           <FaChartLine /> Dönemsel Karşılaştırma
+        </button>
+        <button 
+          className={`tab ${activeTab === 'heatmap' ? 'active' : ''}`}
+          onClick={() => setActiveTab('heatmap')}
+        >
+          <FaFire /> Bekleyen Mutabakat Isı Haritası
         </button>
       </div>
 
@@ -471,6 +487,213 @@ export default function Reports() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Bekleyen Mutabakat Isı Haritası Sekmesi */}
+      {activeTab === 'heatmap' && (
+        <div className="tab-content">
+          {heatmapData && (
+            <>
+              {/* Özet Bilgiler */}
+              <div className="stats-section">
+                <div className="heatmap-header">
+                  <h2>Bekleyen Mutabakat Isı Haritası</h2>
+                  <div className="heatmap-controls">
+                    <label>Son kaç gün:</label>
+                    <select 
+                      value={heatmapDays} 
+                      onChange={(e) => setHeatmapDays(Number(e.target.value))}
+                      className="heatmap-select"
+                    >
+                      <option value={7}>7 Gün</option>
+                      <option value={14}>14 Gün</option>
+                      <option value={30}>30 Gün</option>
+                      <option value={60}>60 Gün</option>
+                      <option value={90}>90 Gün</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="heatmap-summary">
+                  <div className="summary-card">
+                    <h4>Toplam Bekleyen</h4>
+                    <p className="big-number">{heatmapData.total_pending}</p>
+                  </div>
+                  <div className="summary-card">
+                    <h4>Ortalama Bekleme Süresi</h4>
+                    <p className="big-number">{heatmapData.summary.avg_waiting_days} gün</p>
+                  </div>
+                  <div className="summary-card warning">
+                    <h4>En Uzun Bekleme</h4>
+                    <p className="big-number">{heatmapData.summary.max_waiting_days} gün</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bekleme Süresine Göre Gruplandırma */}
+              <div className="stats-section">
+                <h2>Bekleme Süresine Göre Dağılım</h2>
+                <div className="waiting-buckets">
+                  {Object.entries(heatmapData.waiting_buckets).map(([bucket, count]) => {
+                    const colors = {
+                      "0-1": "#10b981",
+                      "1-3": "#fbbf24",
+                      "3-7": "#f97316",
+                      "7-14": "#ef4444",
+                      "14+": "#dc2626"
+                    }
+                    return (
+                      <div key={bucket} className="bucket-card" style={{borderLeftColor: colors[bucket]}}>
+                        <div className="bucket-header">
+                          <h3>{bucket} gün</h3>
+                          <span className="bucket-count">{count} adet</span>
+                        </div>
+                        <div className="bucket-bar">
+                          <div 
+                            className="bucket-fill" 
+                            style={{
+                              width: `${(count / heatmapData.total_pending) * 100}%`,
+                              backgroundColor: colors[bucket]
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Günlük Dağılım Isı Haritası */}
+              <div className="stats-section">
+                <h2>Günlük Dağılım (Gönderim Tarihine Göre)</h2>
+                <div className="daily-heatmap">
+                  {heatmapData.daily_distribution.map((day, index) => {
+                    const colorMap = {
+                      green: "#10b981",
+                      yellow: "#fbbf24",
+                      orange: "#f97316",
+                      red: "#ef4444"
+                    }
+                    const opacity = 0.3 + (day.intensity * 0.15)
+                    return (
+                      <div 
+                        key={index} 
+                        className="heatmap-cell"
+                        style={{
+                          backgroundColor: colorMap[day.color],
+                          opacity: opacity,
+                          borderColor: colorMap[day.color]
+                        }}
+                        title={`${day.date}: ${day.count} adet, Ort. ${day.avg_waiting_days} gün bekleme`}
+                      >
+                        <div className="cell-date">{new Date(day.date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })}</div>
+                        <div className="cell-count">{day.count}</div>
+                        <div className="cell-days">{day.avg_waiting_days}g</div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="heatmap-legend">
+                  <div className="legend-item">
+                    <span className="legend-color" style={{backgroundColor: "#10b981"}}></span>
+                    <span>0-1 gün</span>
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-color" style={{backgroundColor: "#fbbf24"}}></span>
+                    <span>1-3 gün</span>
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-color" style={{backgroundColor: "#f97316"}}></span>
+                    <span>3-7 gün</span>
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-color" style={{backgroundColor: "#ef4444"}}></span>
+                    <span>7+ gün</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Müşteri Bazlı Bekleme Süreleri */}
+              <div className="stats-section">
+                <h2>Müşteri Bazlı Bekleme Süreleri</h2>
+                <div className="table-container">
+                  <table className="detailed-table">
+                    <thead>
+                      <tr>
+                        <th>Müşteri</th>
+                        <th>Bekleyen Adet</th>
+                        <th>Ort. Bekleme (Gün)</th>
+                        <th>Max Bekleme (Gün)</th>
+                        <th>Durum</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {heatmapData.customer_waiting.map((customer, index) => {
+                        const colorMap = {
+                          green: "#10b981",
+                          yellow: "#fbbf24",
+                          orange: "#f97316",
+                          red: "#ef4444"
+                        }
+                        return (
+                          <tr key={index}>
+                            <td><strong>{customer.customer_name}</strong></td>
+                            <td>{customer.pending_count}</td>
+                            <td>{customer.avg_waiting_days}</td>
+                            <td>{customer.max_waiting_days}</td>
+                            <td>
+                              <span 
+                                className="status-badge" 
+                                style={{backgroundColor: colorMap[customer.color]}}
+                              >
+                                {customer.color === 'green' ? 'İyi' : 
+                                 customer.color === 'yellow' ? 'Orta' : 
+                                 customer.color === 'orange' ? 'Dikkat' : 'Kritik'}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* En Uzun Bekleyenler */}
+              <div className="stats-section">
+                <h2>En Uzun Bekleyen Mutabakatlar (Top 10)</h2>
+                <div className="table-container">
+                  <table className="detailed-table">
+                    <thead>
+                      <tr>
+                        <th>Mutabakat No</th>
+                        <th>Müşteri</th>
+                        <th>Bekleme Süresi</th>
+                        <th>Gönderim Tarihi</th>
+                        <th>Tutar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {heatmapData.longest_waiting.map((item, index) => (
+                        <tr key={index} className={item.waiting_days > 14 ? 'critical-row' : ''}>
+                          <td><strong>{item.mutabakat_no}</strong></td>
+                          <td>{item.receiver_name}</td>
+                          <td>
+                            <span className={`waiting-badge ${item.waiting_days > 14 ? 'critical' : item.waiting_days > 7 ? 'warning' : ''}`}>
+                              {item.waiting_days} gün
+                            </span>
+                          </td>
+                          <td>{item.send_date ? new Date(item.send_date).toLocaleDateString('tr-TR') : '-'}</td>
+                          <td className="amount">{formatCurrency(item.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
