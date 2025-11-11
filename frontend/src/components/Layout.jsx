@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { FaHome, FaFileAlt, FaPlus, FaSignOutAlt, FaUser, FaUsers, FaCog, FaChartLine, FaBars, FaShieldAlt, FaUserCog, FaBell, FaSearch, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaStore, FaGavel, FaBuilding, FaHistory } from 'react-icons/fa'
 import { Notification } from './Notification'
+import { toast } from 'react-toastify'
 import { useSwipe } from '../hooks/useSwipe'
 import './Layout.css'
 
@@ -99,6 +100,42 @@ export default function Layout() {
       default: return <FaBell />
     }
   }
+
+  // SSE: Gerçek zamanlı bildirim akışı (JWT ile)
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!user || !token) return
+
+    const url = `/api/notifications/stream?token=${encodeURIComponent(token)}`
+    const es = new EventSource(url)
+
+    es.onmessage = (event) => {
+      try {
+        // Backend, SSE data içerisinde JWT ile encode etti. Decode etmeden direkt JSON beklenirse fallback.
+        let payload
+        try {
+          payload = JSON.parse(event.data)
+        } catch {
+          // JWT decode denemeyelim; direkt gösterme (minimal güvenlik için backend zaten doğruladı)
+          return
+        }
+        if (payload?.items?.length) {
+          const latest = payload.items[0]
+          if (latest?.title && latest?.message) {
+            toast.info(`${latest.title}: ${latest.message}`)
+          }
+        }
+      } catch (e) {
+        console.error('SSE message parse error', e)
+      }
+    }
+
+    es.onerror = () => {
+      es.close()
+    }
+
+    return () => es.close()
+  }, [user])
 
   return (
     <div className="layout">

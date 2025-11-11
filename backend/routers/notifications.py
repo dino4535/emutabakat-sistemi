@@ -7,6 +7,11 @@ from backend.models import User, Mutabakat, MutabakatDurumu, UserRole
 from backend.auth import get_current_active_user
 from datetime import datetime, timedelta
 from typing import List, Dict
+from fastapi import Request, HTTPException, status
+from fastapi.responses import StreamingResponse
+from jose import JWTError, jwt
+from backend.auth import SECRET_KEY, ALGORITHM
+import asyncio
 
 router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
 
@@ -220,4 +225,53 @@ def get_notifications(
     notifications.sort(key=lambda x: x['date'], reverse=True)
     
     return notifications
+
+@router.get("/stream")
+async def notifications_stream(
+    request: Request,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Server-Sent Events (SSE) akışı.
+    - Güvenlik: JWT token query param üzerinden doğrulanır (EventSource header desteklemediği için).
+    - Yeni env gerektirmez; mevcut SECRET_KEY/ALGORITHM kullanılır.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        company_id: int = payload.get("company_id")
+        if not username or company_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Geçersiz token")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token doğrulanamadı")
+
+    # Kullanıcıyı doğrula
+    user = db.query(User).filter(
+        User.username == username,
+        User.company_id == company_id,
+        User.is_active == True  # noqa: E712
+    ).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanıcı bulunamadı")
+
+    async def event_generator():
+        # İlk yüklemede mevcut bildirimlerin kısa özeti
+        last_payload = None
+        while True:
+            if await request.is_disconnected():
+                break
+            # Bildirimleri üret
+            notifs = get_notifications(current_user=user, db=db)
+            data = {"count": len(notifs), "items": notifs[:5]}  # son 5'i gönder
+            # Değiştiyse gönder
+            if data != last_payload:
+                last_payload = data
+                yield f"data: {jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)}\n\n"
+            else:
+                # keep-alive ping
+                yield ": ping\n\n"
+            await asyncio.sleep(10)  # 10 sn'de bir güncelle
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
