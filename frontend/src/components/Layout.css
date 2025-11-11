@@ -598,11 +598,7 @@
   backdrop-filter: blur(2px);
 }
 
-/* Menü açıkken header aksiyonlarını kapat (tıklanma sorununu önler) */
-body.sidebar-open .header-right {
-  pointer-events: none;
-  opacity: 0.4;
-}
+/* Not: Masaüstünde soluk görünümü önlemek için bu kural sadece mobilde uygulanır */
 
 /* İçerik alanı alt bar ile çakışmasın */
 .content {
@@ -611,6 +607,11 @@ body.sidebar-open .header-right {
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
+  /* Menü açıkken header aksiyonlarını kapat (tıklanma sorununu önler) - sadece mobil/tablette */
+  body.sidebar-open .header-right {
+    pointer-events: none;
+    opacity: 0.4;
+  }
   .header-content {
     padding: 0 20px;
   }
