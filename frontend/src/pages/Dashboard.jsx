@@ -134,49 +134,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Financial Summary */}
-      <div className="financial-summary">
-        <div className="card modern-card">
-          <h3>
-            <FaMoneyBillWave /> Mali Özet
-          </h3>
-          <div className="financial-grid">
-            <div className="financial-item">
-              <span className="financial-label">Toplam Borç</span>
-              <span className="financial-value borc">
-                <AnimatedCounter 
-                  value={stats?.toplam_borc || 0} 
-                  decimals={0}
-                  suffix=" ₺"
-                  duration={2000}
-                />
-              </span>
-            </div>
-            <div className="financial-item">
-              <span className="financial-label">Toplam Alacak</span>
-              <span className="financial-value alacak">
-                <AnimatedCounter 
-                  value={stats?.toplam_alacak || 0} 
-                  decimals={0}
-                  suffix=" ₺"
-                  duration={2000}
-                />
-              </span>
-            </div>
-            <div className="financial-item">
-              <span className="financial-label">Net Bakiye</span>
-              <span className={`financial-value ${bakiye >= 0 ? 'alacak' : 'borc'}`}>
-                <AnimatedCounter 
-                  value={bakiye} 
-                  decimals={0}
-                  suffix=" ₺"
-                  duration={2000}
-                />
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Financial Summary kaldırıldı */}
 
       {/* Quick Actions & Recent Activities */}
       <div className="dashboard-bottom">
