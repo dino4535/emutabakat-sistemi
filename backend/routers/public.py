@@ -114,6 +114,32 @@ def approve_or_reject_by_token(
     action = request_data.action.lower()
     
     if action == "approve":
+        # KVKK onay kontrolü (token'daki mutabakatın alıcısı için)
+        from backend.models import KVKKConsent, User
+        receiver = mutabakat.receiver
+        if not receiver:
+            raise HTTPException(status_code=404, detail="Alıcı bulunamadı")
+        consent = db.query(KVKKConsent).filter(
+            KVKKConsent.user_id == receiver.id,
+            KVKKConsent.company_id == mutabakat.company_id
+        ).first()
+        missing_consents = []
+        if not consent or not consent.kvkk_policy_accepted:
+            missing_consents.append("kvkk_policy")
+        if not consent or not consent.customer_notice_accepted:
+            missing_consents.append("customer_notice")
+        if not consent or not consent.data_retention_accepted:
+            missing_consents.append("data_retention")
+        if not consent or not consent.system_consent_accepted:
+            missing_consents.append("system_consent")
+        if missing_consents:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "message": "KVKK onayları tamamlanmadan mutabakat onaylanamaz.",
+                    "missing_consents": missing_consents
+                }
+            )
         # Onayla
         mutabakat.durum = MutabakatDurumu.ONAYLANDI
         mutabakat.onay_tarihi = datetime.utcnow()
