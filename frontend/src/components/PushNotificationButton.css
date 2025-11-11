@@ -1,0 +1,110 @@
+.push-notification-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.push-notification-button.unsupported {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.push-notification-button.unsupported svg {
+  margin-right: 5px;
+}
+
+.btn-push-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  background: white;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-push-toggle:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-push-toggle.active {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.btn-push-toggle.active:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.btn-push-toggle.inactive {
+  background: white;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
+
+.btn-push-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-push-toggle .spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-push-test {
+  padding: 10px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-push-test:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.btn-push-test:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-push-test .spinner {
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: 768px) {
+  .push-notification-button {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-push-toggle,
+  .btn-push-test {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

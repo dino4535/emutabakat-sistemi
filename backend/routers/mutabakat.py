@@ -14,7 +14,7 @@ from backend.schemas import (
     MutabakatUpdate
 )
 from backend.auth import get_current_active_user
-from backend.logger import ActivityLogger
+from backend.logger import ActivityLogger, logger
 from backend.middleware.rate_limiter import RateLimiter, RateLimitRules
 from backend.sms import sms_service
 from backend.utils.audit_logger import log_mutabakat_action, create_audit_log
@@ -570,6 +570,22 @@ def send_mutabakat(
     else:
         sms_info = "Alıcının telefon numarası bulunamadı"
     
+    # Push notification gönder (alıcıya)
+    if receiver:
+        try:
+            from backend.utils.push_notifications import send_mutabakat_sent_push
+            sender_name = current_user.company_name or current_user.full_name or current_user.username
+            send_mutabakat_sent_push(
+                db=db,
+                receiver_id=receiver.id,
+                mutabakat_no=mutabakat.mutabakat_no,
+                sender_name=sender_name,
+                amount=mutabakat.bakiye
+            )
+        except Exception as e:
+            # Push hatası logla ama işlemi durma
+            logger.error(f"[PUSH] Mutabakat gönderim push hatası: {e}")
+    
     # Custom response: hem mutabakat hem de SMS bilgisi
     return {
         "mutabakat": mutabakat,
@@ -806,6 +822,22 @@ def approve_mutabakat(
                 request.client.host if request.client else "unknown"
             )
     
+    # Push notification gönder (gönderene)
+    if sender:
+        try:
+            from backend.utils.push_notifications import send_mutabakat_approved_push
+            receiver_name = current_user.company_name or current_user.full_name or current_user.username
+            send_mutabakat_approved_push(
+                db=db,
+                sender_id=sender.id,
+                mutabakat_no=mutabakat.mutabakat_no,
+                receiver_name=receiver_name,
+                amount=mutabakat.bakiye
+            )
+        except Exception as e:
+            # Push hatası logla ama işlemi durma
+            logger.error(f"[PUSH] Mutabakat onay push hatası: {e}")
+    
     return mutabakat
 
 @router.post("/{mutabakat_id}/reject", response_model=MutabakatResponse)
@@ -890,6 +922,23 @@ def reject_mutabakat(
                 current_user.id,
                 request.client.host if request.client else "unknown"
             )
+    
+    # Push notification gönder (gönderene)
+    if sender:
+        try:
+            from backend.utils.push_notifications import send_mutabakat_rejected_push
+            receiver_name = current_user.company_name or current_user.full_name or current_user.username
+            send_mutabakat_rejected_push(
+                db=db,
+                sender_id=sender.id,
+                mutabakat_no=mutabakat.mutabakat_no,
+                receiver_name=receiver_name,
+                reason=red_nedeni,
+                amount=mutabakat.bakiye
+            )
+        except Exception as e:
+            # Push hatası logla ama işlemi durma
+            logger.error(f"[PUSH] Mutabakat red push hatası: {e}")
     
     return mutabakat
 

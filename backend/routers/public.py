@@ -7,7 +7,7 @@ from backend.database import get_db
 from backend.models import Mutabakat, MutabakatDurumu, Company, ActivityLog
 from backend.schemas import MutabakatResponse
 from backend.utils.tokens import verify_approval_token, mark_token_as_used
-from backend.logger import ActivityLogger
+from backend.logger import ActivityLogger, logger
 from backend.sms import sms_service
 from datetime import datetime
 from pydantic import BaseModel
@@ -208,6 +208,21 @@ def approve_or_reject_by_token(
                     request.client.host if request.client else "unknown"
                 )
         
+        # Push notification gönder (gönderene)
+        if sender:
+            try:
+                from backend.utils.push_notifications import send_mutabakat_approved_push
+                receiver_name = mutabakat.receiver.company_name or mutabakat.receiver.full_name or mutabakat.receiver.username
+                send_mutabakat_approved_push(
+                    db=db,
+                    sender_id=sender.id,
+                    mutabakat_no=mutabakat.mutabakat_no,
+                    receiver_name=receiver_name,
+                    amount=mutabakat.bakiye
+                )
+            except Exception as e:
+                logger.error(f"[PUSH] Mutabakat onay push hatası: {e}")
+        
         return {
             "success": True,
             "message": "Mutabakat başarıyla onaylandı!",
@@ -272,6 +287,22 @@ def approve_or_reject_by_token(
                     mutabakat.receiver_id, 
                     request.client.host if request.client else "unknown"
                 )
+        
+        # Push notification gönder (gönderene)
+        if sender:
+            try:
+                from backend.utils.push_notifications import send_mutabakat_rejected_push
+                receiver_name = mutabakat.receiver.company_name or mutabakat.receiver.full_name or mutabakat.receiver.username
+                send_mutabakat_rejected_push(
+                    db=db,
+                    sender_id=sender.id,
+                    mutabakat_no=mutabakat.mutabakat_no,
+                    receiver_name=receiver_name,
+                    reason=request_data.red_nedeni,
+                    amount=mutabakat.bakiye
+                )
+            except Exception as e:
+                logger.error(f"[PUSH] Mutabakat red push hatası: {e}")
         
         return {
             "success": True,

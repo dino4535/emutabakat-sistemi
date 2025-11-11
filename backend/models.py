@@ -128,6 +128,7 @@ class User(Base):
     received_mutabakats = relationship("Mutabakat", foreign_keys="Mutabakat.receiver_id", back_populates="receiver")
     bayiler = relationship("Bayi", back_populates="user", cascade="all, delete-orphan")  # VKN'ye ait bayiler
     logs = relationship("ActivityLog", back_populates="user")
+    push_subscriptions = relationship("PushSubscription", back_populates="user", cascade="all, delete-orphan")  # Push notification abonelikleri
 
 class Mutabakat(Base):
     """Mutabakat Belgesi Modeli - VKN Bazlı (Çoklu Bayi Desteği) - Multi-Company"""
@@ -575,4 +576,35 @@ class AuditLog(Base):
     
     def __repr__(self):
         return f"<AuditLog {self.action} by {self.username} at {self.created_at}>"
+
+class PushSubscription(Base):
+    """Web Push Notification Subscription - Kullanıcı push notification abonelikleri"""
+    __tablename__ = "push_subscriptions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Kullanıcı Bilgisi
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Web Push Subscription Bilgileri (VAPID)
+    endpoint = Column(Text, nullable=False)  # Push service endpoint URL
+    p256dh = Column(Text, nullable=False)  # User public key (base64)
+    auth = Column(Text, nullable=False)  # User authentication secret (base64)
+    
+    # Subscription Durumu
+    enabled = Column(Boolean, default=True, index=True)  # Kullanıcı bildirimleri açık mı?
+    
+    # User Agent ve Device Bilgisi
+    user_agent = Column(String(500))  # Browser/device bilgisi
+    device_info = Column(String(255))  # Device bilgisi (opsiyonel)
+    
+    # Tarih Bilgileri
+    created_at = Column(DateTime, default=get_turkey_time, nullable=False)
+    updated_at = Column(DateTime, default=get_turkey_time, onupdate=get_turkey_time)
+    last_notification_sent = Column(DateTime, nullable=True)  # Son bildirim gönderim zamanı
+    
+    # İlişkiler
+    user = relationship("User", back_populates="push_subscriptions")
+    company = relationship("Company")
 

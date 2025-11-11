@@ -18,6 +18,19 @@ function setViewportHeightUnit() {
 setViewportHeightUnit()
 window.addEventListener('resize', setViewportHeightUnit)
 
+// Service Worker'ı register et (Push Notifications için)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('✅ Service Worker kaydedildi:', registration.scope);
+      })
+      .catch((error) => {
+        console.error('❌ Service Worker kaydedilemedi:', error);
+      });
+  });
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

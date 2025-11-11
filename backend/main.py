@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.database import init_db, engine
-from backend.routers import auth, mutabakat, dashboard, users, users_excel, users_excel_vkn, bulk_mutabakat, public, reports, verification, bayi, notifications, kvkk, legal_reports, admin_companies, security, audit_logs
+from backend.routers import auth, mutabakat, dashboard, users, users_excel, users_excel_vkn, bulk_mutabakat, public, reports, verification, bayi, notifications, kvkk, legal_reports, admin_companies, security, audit_logs, push
 from backend.logger import logger
 import os
 from dotenv import load_dotenv
@@ -46,6 +46,7 @@ app.include_router(legal_reports.router)  # Yasal raporlar (resmi makamlar için
 app.include_router(admin_companies.router)  # Admin: Şirket yönetimi (Multi-Company)
 app.include_router(security.router)  # Güvenlik yönetimi (Failed Login Tracking)
 app.include_router(audit_logs.router)  # Audit Logs (Tüm işlem kayıtları)
+app.include_router(push.router)  # Push Notifications (Web Push)
 
 @app.on_event("startup")
 async def startup_event():
