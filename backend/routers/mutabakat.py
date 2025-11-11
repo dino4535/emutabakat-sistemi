@@ -494,34 +494,6 @@ def send_mutabakat(
             detail="Sadece taslak mutabakatlar gönderilebilir"
         )
     
-    # KVKK onay kontrolü (Alıcı için, aynı şirket kapsamında)
-    from backend.models import KVKKConsent
-    receiver = db.query(User).filter(User.id == mutabakat.receiver_id).first()
-    if not receiver:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alıcı bulunamadı")
-    consent = db.query(KVKKConsent).filter(
-        KVKKConsent.user_id == receiver.id,
-        KVKKConsent.company_id == mutabakat.company_id
-    ).first()
-    missing_consents = []
-    if not consent or not consent.kvkk_policy_accepted:
-        missing_consents.append("kvkk_policy")
-    if not consent or not consent.customer_notice_accepted:
-        missing_consents.append("customer_notice")
-    if not consent or not consent.data_retention_accepted:
-        missing_consents.append("data_retention")
-    if not consent or not consent.system_consent_accepted:
-        missing_consents.append("system_consent")
-    if missing_consents:
-        # Gönderimi engelle ve eksik KVKK onaylarını bildir
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "message": "Alıcının KVKK onayları eksik olduğu için mutabakat gönderilemez.",
-                "missing_consents": missing_consents
-            }
-        )
-    
     # Durumu güncelle
     mutabakat.durum = MutabakatDurumu.GONDERILDI
     mutabakat.gonderim_tarihi = datetime.utcnow()

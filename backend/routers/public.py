@@ -133,13 +133,22 @@ def approve_or_reject_by_token(
         if not consent or not consent.system_consent_accepted:
             missing_consents.append("system_consent")
         if missing_consents:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "message": "KVKK onayları tamamlanmadan mutabakat onaylanamaz.",
-                    "missing_consents": missing_consents
+            # KVKK onayı eksik - frontend'e özel response dön
+            return {
+                "success": False,
+                "requires_kvkk_consent": True,
+                "message": "Mutabakatı onaylamadan önce KVKK onaylarını tamamlamanız gerekmektedir.",
+                "missing_consents": missing_consents,
+                "mutabakat": {
+                    "id": mutabakat.id,
+                    "mutabakat_no": mutabakat.mutabakat_no,
+                    "donem_baslangic": mutabakat.donem_baslangic.isoformat() if mutabakat.donem_baslangic else None,
+                    "donem_bitis": mutabakat.donem_bitis.isoformat() if mutabakat.donem_bitis else None,
+                    "toplam_borc": float(mutabakat.toplam_borc) if mutabakat.toplam_borc else 0.0,
+                    "toplam_alacak": float(mutabakat.toplam_alacak) if mutabakat.toplam_alacak else 0.0,
+                    "bakiye": float(mutabakat.bakiye) if mutabakat.bakiye else 0.0
                 }
-            )
+            }
         # Onayla
         mutabakat.durum = MutabakatDurumu.ONAYLANDI
         mutabakat.onay_tarihi = datetime.utcnow()
@@ -275,6 +284,257 @@ def approve_or_reject_by_token(
             status_code=400,
             detail="Geçersiz aksiyon. 'approve' veya 'reject' olmalıdır."
         )
+
+
+class PublicKVKKConsentRequest(BaseModel):
+    """Public KVKK Onay Talebi (Token ile)"""
+    kvkk_policy_accepted: bool
+    customer_notice_accepted: bool
+    data_retention_accepted: bool
+    system_consent_accepted: bool
+
+@router.post("/mutabakat/{token}/kvkk-consent")
+def submit_kvkk_consent_by_token(
+    token: str,
+    consent_data: PublicKVKKConsentRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Token ile KVKK onayı gönder (public endpoint - SMS linki üzerinden)
+    
+    Args:
+        token: Onay token'ı
+        consent_data: KVKK onay bilgileri
+        request: Request objesi
+        db: Database session
+        
+    Returns:
+        dict: İşlem sonucu
+    """
+    # Token'ı doğrula
+    mutabakat = verify_approval_token(db, token)
+    
+    if not mutabakat:
+        raise HTTPException(
+            status_code=404,
+            detail="Geçersiz veya kullanılmış link. Bu link artık geçerli değil."
+        )
+    
+    # Alıcıyı bul
+    receiver = mutabakat.receiver
+    if not receiver:
+        raise HTTPException(status_code=404, detail="Alıcı bulunamadı")
+    
+    # IP ve ISP bilgisini al
+    def get_real_ip_with_isp(request: Request) -> dict:
+        """Gerçek public IP adresini ve ISP bilgisini al"""
+        forwarded_for = request.headers.get('X-Forwarded-For')
+        if forwarded_for:
+            client_ip = forwarded_for.split(',')[0].strip()
+        elif request.headers.get('X-Real-IP'):
+            client_ip = request.headers.get('X-Real-IP')
+        else:
+            client_ip = request.client.host if request.client else "unknown"
+        
+        if client_ip in ['127.0.0.1', 'localhost', '::1', 'unknown']:
+            try:
+                response = requests.get('https://api.ipify.org?format=json', timeout=3)
+                if response.status_code == 200:
+                    client_ip = response.json().get('ip')
+            except:
+                pass
+        
+        ip_info = {
+            "ip": client_ip,
+            "isp": "Bilinmiyor",
+            "org": "Bilinmiyor",
+            "city": "Bilinmiyor",
+            "country": "Bilinmiyor"
+        }
+        
+        if client_ip != "unknown":
+            try:
+                response = requests.get(f'http://ip-api.com/json/{client_ip}?fields=status,country,regionName,city,isp,org,query', timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'success':
+                        ip_info = {
+                            "ip": data.get('query', client_ip),
+                            "isp": data.get('isp', 'Bilinmiyor'),
+                            "org": data.get('org', 'Bilinmiyor'),
+                            "city": data.get('city', 'Bilinmiyor'),
+                            "country": data.get('country', 'Bilinmiyor')
+                        }
+            except:
+                pass
+        
+        return ip_info
+    
+    try:
+        ip_info = get_real_ip_with_isp(request)
+    except:
+        ip_info = {
+            "ip": request.client.host if request.client else "unknown",
+            "isp": "Bilinmiyor",
+            "city": "Bilinmiyor",
+            "country": "Bilinmiyor",
+            "org": "Bilinmiyor"
+        }
+    
+    user_agent = request.headers.get('user-agent', '')
+    
+    # KVKK onayını kaydet veya güncelle
+    from backend.models import KVKKConsent, get_turkey_time
+    from backend.routers.kvkk import (
+        KVKK_POLICY_VERSION, CUSTOMER_NOTICE_VERSION,
+        DATA_RETENTION_VERSION, SYSTEM_CONSENT_VERSION
+    )
+    
+    now = get_turkey_time()
+    
+    consent = db.query(KVKKConsent).filter(
+        KVKKConsent.user_id == receiver.id,
+        KVKKConsent.company_id == mutabakat.company_id
+    ).first()
+    
+    if consent:
+        # Güncelleme
+        if consent_data.kvkk_policy_accepted and not consent.kvkk_policy_accepted:
+            consent.kvkk_policy_accepted = True
+            consent.kvkk_policy_date = now
+            consent.kvkk_policy_version = KVKK_POLICY_VERSION
+        if consent_data.customer_notice_accepted and not consent.customer_notice_accepted:
+            consent.customer_notice_accepted = True
+            consent.customer_notice_date = now
+            consent.customer_notice_version = CUSTOMER_NOTICE_VERSION
+        if consent_data.data_retention_accepted and not consent.data_retention_accepted:
+            consent.data_retention_accepted = True
+            consent.data_retention_date = now
+            consent.data_retention_version = DATA_RETENTION_VERSION
+        if consent_data.system_consent_accepted and not consent.system_consent_accepted:
+            consent.system_consent_accepted = True
+            consent.system_consent_date = now
+            consent.system_consent_version = SYSTEM_CONSENT_VERSION
+        
+        # ISP bilgilerini güncelle
+        consent.ip_address = ip_info['ip']
+        consent.isp = ip_info['isp']
+        consent.city = ip_info['city']
+        consent.country = ip_info['country']
+        consent.organization = ip_info.get('org', 'Bilinmiyor')
+        consent.user_agent = user_agent
+    else:
+        # Yeni kayıt
+        consent = KVKKConsent(
+            company_id=mutabakat.company_id,
+            user_id=receiver.id,
+            kvkk_policy_accepted=consent_data.kvkk_policy_accepted,
+            customer_notice_accepted=consent_data.customer_notice_accepted,
+            data_retention_accepted=consent_data.data_retention_accepted,
+            system_consent_accepted=consent_data.system_consent_accepted,
+            kvkk_policy_date=now if consent_data.kvkk_policy_accepted else None,
+            customer_notice_date=now if consent_data.customer_notice_accepted else None,
+            data_retention_date=now if consent_data.data_retention_accepted else None,
+            system_consent_date=now if consent_data.system_consent_accepted else None,
+            kvkk_policy_version=KVKK_POLICY_VERSION,
+            customer_notice_version=CUSTOMER_NOTICE_VERSION,
+            data_retention_version=DATA_RETENTION_VERSION,
+            system_consent_version=SYSTEM_CONSENT_VERSION,
+            ip_address=ip_info['ip'],
+            isp=ip_info['isp'],
+            city=ip_info['city'],
+            country=ip_info['country'],
+            organization=ip_info.get('org', 'Bilinmiyor'),
+            user_agent=user_agent
+        )
+        db.add(consent)
+    
+    db.commit()
+    db.refresh(consent)
+    
+    # Log kaydet
+    ActivityLogger.log_activity(
+        db=db,
+        user_id=receiver.id,
+        action="KVKK_CONSENT_GIVEN_PUBLIC",
+        description=f"KVKK onayı SMS linki üzerinden verildi (Token: {token[:10]}...)",
+        ip=ip_info['ip']
+    )
+    
+    return {
+        "success": True,
+        "message": "KVKK onayları başarıyla kaydedildi. Şimdi mutabakatı onaylayabilirsiniz.",
+        "all_consents_given": (
+            consent.kvkk_policy_accepted and
+            consent.customer_notice_accepted and
+            consent.data_retention_accepted and
+            consent.system_consent_accepted
+        )
+    }
+
+
+@router.get("/mutabakat/{token}/kvkk-texts")
+def get_kvkk_texts_by_token(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Token ile KVKK metinlerini getir (public endpoint - SMS linki üzerinden)
+    
+    Args:
+        token: Onay token'ı
+        db: Database session
+        
+    Returns:
+        dict: KVKK metinleri
+    """
+    # Token'ı doğrula
+    mutabakat = verify_approval_token(db, token)
+    
+    if not mutabakat:
+        raise HTTPException(
+            status_code=404,
+            detail="Geçersiz veya kullanılmış link. Bu link artık geçerli değil."
+        )
+    
+    # Şirket bilgisini al
+    company = db.query(Company).filter(Company.id == mutabakat.company_id).first()
+    
+    # KVKK metinlerini import et
+    from backend.kvkk_constants import (
+        KVKK_POLICY_TEXT, KVKK_POLICY_TITLE, KVKK_POLICY_SUMMARY, KVKK_POLICY_VERSION,
+        CUSTOMER_NOTICE_TEXT, CUSTOMER_NOTICE_TITLE, CUSTOMER_NOTICE_SUMMARY, CUSTOMER_NOTICE_VERSION,
+        DATA_RETENTION_POLICY_TEXT, DATA_RETENTION_TITLE, DATA_RETENTION_SUMMARY, DATA_RETENTION_VERSION,
+        SYSTEM_CONSENT_TEXT, SYSTEM_CONSENT_TITLE, SYSTEM_CONSENT_SUMMARY, SYSTEM_CONSENT_VERSION
+    )
+    
+    return {
+        "kvkk_policy": {
+            "title": KVKK_POLICY_TITLE,
+            "summary": KVKK_POLICY_SUMMARY,
+            "content": company.kvkk_policy_text if company and company.kvkk_policy_text else KVKK_POLICY_TEXT,
+            "version": company.kvkk_policy_version if company and company.kvkk_policy_version else KVKK_POLICY_VERSION
+        },
+        "customer_notice": {
+            "title": CUSTOMER_NOTICE_TITLE,
+            "summary": CUSTOMER_NOTICE_SUMMARY,
+            "content": company.customer_notice_text if company and company.customer_notice_text else CUSTOMER_NOTICE_TEXT,
+            "version": company.customer_notice_version if company and company.customer_notice_version else CUSTOMER_NOTICE_VERSION
+        },
+        "data_retention": {
+            "title": DATA_RETENTION_TITLE,
+            "summary": DATA_RETENTION_SUMMARY,
+            "content": company.data_retention_policy_text if company and company.data_retention_policy_text else DATA_RETENTION_POLICY_TEXT,
+            "version": company.data_retention_version if company and company.data_retention_version else DATA_RETENTION_VERSION
+        },
+        "system_consent": {
+            "title": SYSTEM_CONSENT_TITLE,
+            "summary": SYSTEM_CONSENT_SUMMARY,
+            "content": company.system_consent_text if company and company.system_consent_text else SYSTEM_CONSENT_TEXT,
+            "version": company.system_consent_version if company and company.system_consent_version else SYSTEM_CONSENT_VERSION
+        }
+    }
 
 
 @router.get("/mutabakat/verify/{mutabakat_no}")

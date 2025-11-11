@@ -302,6 +302,170 @@
   font-style: italic;
 }
 
+/* KVKK Consent Styles */
+.kvkk-consent-card {
+  max-width: 900px;
+}
+
+.kvkk-icon {
+  font-size: 3rem;
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.kvkk-sections {
+  margin: 30px 0;
+}
+
+.kvkk-section {
+  margin-bottom: 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
+
+.kvkk-section-highlighted {
+  border-color: #fbbf24;
+  background: #fffbeb;
+}
+
+.kvkk-section-header {
+  padding: 0;
+}
+
+.kvkk-expand-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.3s ease;
+}
+
+.kvkk-expand-btn:hover {
+  background: #f9fafb;
+}
+
+.kvkk-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.kvkk-title-area {
+  flex: 1;
+}
+
+.kvkk-title-area h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.kvkk-summary {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.kvkk-expand-icon {
+  font-size: 1.5rem;
+  color: #667eea;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.kvkk-content {
+  padding: 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.kvkk-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.kvkk-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.kvkk-checkbox:hover {
+  background: #f3f4f6;
+}
+
+.kvkk-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.kvkk-checkbox span {
+  flex: 1;
+  color: #333;
+  font-weight: 500;
+}
+
+.kvkk-checkbox .checkmark {
+  color: #10b981;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.kvkk-footer {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e5e7eb;
+  text-align: center;
+}
+
+.btn-large {
+  padding: 18px 40px;
+  font-size: 1.2rem;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kvkk-warning {
+  margin-top: 15px;
+  color: #f59e0b;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
 @media (max-width: 768px) {
   .public-approval-card {
     padding: 25px;
@@ -323,6 +487,30 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
+  }
+
+  .kvkk-consent-card {
+    padding: 20px;
+  }
+
+  .kvkk-expand-btn {
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .kvkk-number {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .kvkk-title-area h3 {
+    font-size: 1rem;
+  }
+
+  .kvkk-content {
+    padding: 15px;
+    max-height: 300px;
   }
 }
 
