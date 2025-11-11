@@ -867,52 +867,63 @@ export default function Reports() {
               <div className="stats-section">
                 <h3>Gönderilen, Onaylanan ve Reddedilen Mutabakatlar</h3>
                 <div className="trend-chart-container">
-                  <div className="trend-chart">
-                    {timeSeriesData.series.map((item, index) => {
-                      const maxVal = Math.max(...timeSeriesData.series.map(s => Math.max(s.sent, s.approved, s.rejected)))
-                      const sentHeight = maxVal > 0 ? (item.sent / maxVal) * 100 : 0
-                      const approvedHeight = maxVal > 0 ? (item.approved / maxVal) * 100 : 0
-                      const rejectedHeight = maxVal > 0 ? (item.rejected / maxVal) * 100 : 0
-                      const label = trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
-                      
-                      return (
-                        <div key={index} className="trend-bar-group">
-                          <div className="trend-bars">
-                            <div 
-                              className="trend-bar sent" 
-                              style={{height: `${sentHeight}%`}}
-                              title={`Gönderilen: ${item.sent}`}
-                            ></div>
-                            <div 
-                              className="trend-bar approved" 
-                              style={{height: `${approvedHeight}%`}}
-                              title={`Onaylanan: ${item.approved}`}
-                            ></div>
-                            <div 
-                              className="trend-bar rejected" 
-                              style={{height: `${rejectedHeight}%`}}
-                              title={`Reddedilen: ${item.rejected}`}
-                            ></div>
-                          </div>
-                          <div className="trend-label">{label}</div>
+                  {timeSeriesData.series && timeSeriesData.series.length > 0 ? (
+                    <>
+                      <div className="trend-chart">
+                        {timeSeriesData.series.map((item, index) => {
+                          const maxVal = Math.max(
+                            ...timeSeriesData.series.map(s => Math.max(s.sent || 0, s.approved || 0, s.rejected || 0)),
+                            1
+                          )
+                          const sentHeight = maxVal > 0 ? Math.max((item.sent || 0) / maxVal * 100, item.sent > 0 ? 5 : 0) : 0
+                          const approvedHeight = maxVal > 0 ? Math.max((item.approved || 0) / maxVal * 100, item.approved > 0 ? 5 : 0) : 0
+                          const rejectedHeight = maxVal > 0 ? Math.max((item.rejected || 0) / maxVal * 100, item.rejected > 0 ? 5 : 0) : 0
+                          const label = trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+                          
+                          return (
+                            <div key={index} className="trend-bar-group">
+                              <div className="trend-bars">
+                                <div 
+                                  className="trend-bar sent" 
+                                  style={{height: `${sentHeight}%`}}
+                                  title={`Gönderilen: ${item.sent || 0}`}
+                                ></div>
+                                <div 
+                                  className="trend-bar approved" 
+                                  style={{height: `${approvedHeight}%`}}
+                                  title={`Onaylanan: ${item.approved || 0}`}
+                                ></div>
+                                <div 
+                                  className="trend-bar rejected" 
+                                  style={{height: `${rejectedHeight}%`}}
+                                  title={`Reddedilen: ${item.rejected || 0}`}
+                                ></div>
+                              </div>
+                              <div className="trend-label">{label}</div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="trend-legend">
+                        <div className="legend-item">
+                          <span className="legend-color sent"></span>
+                          <span>Gönderilen</span>
                         </div>
-                      )
-                    })}
-                  </div>
-                  <div className="trend-legend">
-                    <div className="legend-item">
-                      <span className="legend-color sent"></span>
-                      <span>Gönderilen</span>
+                        <div className="legend-item">
+                          <span className="legend-color approved"></span>
+                          <span>Onaylanan</span>
+                        </div>
+                        <div className="legend-item">
+                          <span className="legend-color rejected"></span>
+                          <span>Reddedilen</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{padding: '40px', textAlign: 'center', color: 'var(--text-secondary)'}}>
+                      <p>Bu dönem için veri bulunamadı.</p>
                     </div>
-                    <div className="legend-item">
-                      <span className="legend-color approved"></span>
-                      <span>Onaylanan</span>
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color rejected"></span>
-                      <span>Reddedilen</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -920,30 +931,42 @@ export default function Reports() {
               <div className="stats-section">
                 <h3>Ortalama Onay Süresi (Gün)</h3>
                 <div className="trend-chart-container">
-                  <div className="trend-chart">
-                    {timeSeriesData.series.map((item, index) => {
-                      const maxDays = Math.max(...timeSeriesData.series.map(s => s.avg_response_days || 0), 1)
-                      const height = maxDays > 0 ? ((item.avg_response_days || 0) / maxDays) * 100 : 0
-                      const label = trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
-                      
-                      return (
-                        <div key={index} className="trend-bar-group">
-                          <div className="trend-bars">
-                            <div 
-                              className="trend-bar response-time" 
-                              style={{height: `${height}%`}}
-                              title={`Ort. Onay Süresi: ${item.avg_response_days} gün`}
-                            >
-                              {item.avg_response_days > 0 && (
-                                <span className="bar-value">{item.avg_response_days.toFixed(1)}</span>
-                              )}
+                  {timeSeriesData.series && timeSeriesData.series.length > 0 ? (
+                    <div className="trend-chart">
+                      {timeSeriesData.series.map((item, index) => {
+                        const responseDays = item.avg_response_days || 0
+                        const maxDays = Math.max(
+                          ...timeSeriesData.series.map(s => s.avg_response_days || 0),
+                          1
+                        )
+                        const height = maxDays > 0 && responseDays > 0 
+                          ? Math.max((responseDays / maxDays) * 100, 5) 
+                          : 0
+                        const label = trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+                        
+                        return (
+                          <div key={index} className="trend-bar-group">
+                            <div className="trend-bars">
+                              <div 
+                                className="trend-bar response-time" 
+                                style={{height: `${height}%`}}
+                                title={`Ort. Onay Süresi: ${responseDays.toFixed(2)} gün`}
+                              >
+                                {responseDays > 0 && (
+                                  <span className="bar-value">{responseDays.toFixed(1)}</span>
+                                )}
+                              </div>
                             </div>
+                            <div className="trend-label">{label}</div>
                           </div>
-                          <div className="trend-label">{label}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{padding: '40px', textAlign: 'center', color: 'var(--text-secondary)'}}>
+                      <p>Bu dönem için ortalama onay süresi verisi bulunamadı.</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
