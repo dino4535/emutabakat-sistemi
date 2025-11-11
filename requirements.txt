@@ -26,5 +26,5 @@ pytest==7.4.3
 pytest-asyncio==0.21.1
 httpx==0.25.2
 pywebpush==1.14.0
-py-vapid==1.11.0
+py-vapid==1.9.2
 
