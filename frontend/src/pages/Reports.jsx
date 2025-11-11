@@ -60,11 +60,13 @@ export default function Reports() {
     }
   })
 
-  // Dönemsel karşılaştırma
+  // Dönemsel karşılaştırma (seçilen döneme göre son 12 ay)
+  const [comparisonPeriod, setComparisonPeriod] = useState('')
   const { data: periodComparison } = useQuery({
-    queryKey: ['reports-period-comparison'],
+    queryKey: ['reports-period-comparison', comparisonPeriod],
     queryFn: async () => {
-      const response = await axios.get('/api/reports/period-comparison')
+      const qs = comparisonPeriod ? `?end_period=${comparisonPeriod}` : ''
+      const response = await axios.get(`/api/reports/period-comparison${qs}`)
       return response.data
     }
   })
@@ -560,7 +562,22 @@ export default function Reports() {
       {activeTab === 'period' && periodComparison && (
         <div className="tab-content">
           <div className="stats-section">
-            <h2>Son 12 Aylık Performans</h2>
+            <div className="heatmap-header">
+              <h2>Son 12 Aylık Performans</h2>
+              <div className="heatmap-controls">
+                <label>Bitiş Dönemi:</label>
+                <select 
+                  value={comparisonPeriod} 
+                  onChange={(e) => setComparisonPeriod(e.target.value)}
+                  className="heatmap-select"
+                >
+                  <option value="">Bugüne Göre</option>
+                  {availablePeriods?.map(period => (
+                    <option key={period} value={period}>{period}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <div className="period-chart">
               {periodComparison.map((period, index) => (
                 <div key={index} className="period-item">

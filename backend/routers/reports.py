@@ -636,6 +636,7 @@ def get_available_periods(
 
 @router.get("/period-comparison")
 def get_period_comparison(
+    end_period: Optional[str] = Query(None, description="Bitiş dönemi MM/YYYY (ör. 12/2025). Belirtilmezse bugüne göre hesaplanır."),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
@@ -645,9 +646,22 @@ def get_period_comparison(
     mutabakat_company_filter = Mutabakat.company_id == current_user.company_id if current_user.role == UserRole.COMPANY_ADMIN else True
     
     result = []
-    for i in range(0, 12):  # Son 12 ay (bu ay -> 11 ay önce)
+
+    # Referans ay belirle
+    if end_period:
+        try:
+            month_str, year_str = end_period.split('/')
+            ref_month = int(month_str)
+            ref_year = int(year_str)
+            reference = datetime(ref_year, ref_month, 1, 0, 0, 0)
+        except Exception:
+            reference = datetime.utcnow()
+    else:
+        reference = datetime.utcnow()
+
+    for i in range(0, 12):  # Son 12 ay (referans ay -> 11 ay önce)
         # Dönem başlangıç ve bitiş tarihleri
-        target_date = datetime.now() - timedelta(days=30*i)
+        target_date = reference - timedelta(days=30*i)
         start_of_month = target_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
         # Bir sonraki ayın ilk günü
