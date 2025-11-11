@@ -36,6 +36,50 @@ def get_real_ip(request: Request) -> str:
     
     return client_ip
 
+def get_real_ip_with_isp(request: Request) -> dict:
+    """Gerçek public IP adresini ve ISP bilgisini al"""
+    forwarded_for = request.headers.get('X-Forwarded-For')
+    if forwarded_for:
+        client_ip = forwarded_for.split(',')[0].strip()
+    elif request.headers.get('X-Real-IP'):
+        client_ip = request.headers.get('X-Real-IP')
+    else:
+        client_ip = request.client.host if request.client else "unknown"
+    
+    if client_ip in ['127.0.0.1', 'localhost', '::1', 'unknown']:
+        try:
+            response = requests.get('https://api.ipify.org?format=json', timeout=3)
+            if response.status_code == 200:
+                client_ip = response.json().get('ip')
+        except:
+            pass
+    
+    ip_info = {
+        "ip": client_ip,
+        "isp": "Bilinmiyor",
+        "org": "Bilinmiyor",
+        "city": "Bilinmiyor",
+        "country": "Bilinmiyor"
+    }
+    
+    if client_ip != "unknown":
+        try:
+            response = requests.get(f'http://ip-api.com/json/{client_ip}?fields=status,country,regionName,city,isp,org,query', timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    ip_info = {
+                        "ip": data.get('query', client_ip),
+                        "isp": data.get('isp', 'Bilinmiyor'),
+                        "org": data.get('org', 'Bilinmiyor'),
+                        "city": data.get('city', 'Bilinmiyor'),
+                        "country": data.get('country', 'Bilinmiyor')
+                    }
+        except:
+            pass
+    
+    return ip_info
+
 router = APIRouter(prefix="/api/public", tags=["Public"])
 
 class TokenApprovalRequest(BaseModel):
@@ -170,13 +214,27 @@ def approve_or_reject_by_token(
         db.commit()
         db.refresh(mutabakat)
         
-        # Log kaydet - SMS üzerinden onay
-        ActivityLogger.log_activity(
+        # IP ve ISP bilgilerini al
+        try:
+            ip_info = get_real_ip_with_isp(request)
+        except:
+            ip_info = {
+                "ip": request.client.host if request.client else "unknown",
+                "isp": "Bilinmiyor",
+                "city": "Bilinmiyor",
+                "country": "Bilinmiyor",
+                "org": "Bilinmiyor"
+            }
+        
+        # Log kaydet - SMS üzerinden onay (ISP bilgili)
+        from backend.logger import log_activity
+        log_activity(
             db=db,
-            user_id=mutabakat.receiver_id,
             action="MUTABAKAT_ONAYLA_SMS",
             description=f"Mutabakat SMS linki üzerinden onaylandı: {mutabakat.mutabakat_no}",
-            ip=request.client.host if request.client else "unknown"
+            user_id=mutabakat.receiver_id,
+            ip_info=ip_info,
+            company_id=mutabakat.company_id
         )
         
         # Gönderen şirketin email adresine bildirim gönder
@@ -249,13 +307,27 @@ def approve_or_reject_by_token(
         db.commit()
         db.refresh(mutabakat)
         
-        # Log kaydet - SMS üzerinden red
-        ActivityLogger.log_activity(
+        # IP ve ISP bilgilerini al
+        try:
+            ip_info = get_real_ip_with_isp(request)
+        except:
+            ip_info = {
+                "ip": request.client.host if request.client else "unknown",
+                "isp": "Bilinmiyor",
+                "city": "Bilinmiyor",
+                "country": "Bilinmiyor",
+                "org": "Bilinmiyor"
+            }
+        
+        # Log kaydet - SMS üzerinden red (ISP bilgili)
+        from backend.logger import log_activity
+        log_activity(
             db=db,
-            user_id=mutabakat.receiver_id,
             action="MUTABAKAT_REDDET_SMS",
             description=f"Mutabakat SMS linki üzerinden reddedildi: {mutabakat.mutabakat_no} - Neden: {request_data.red_nedeni}",
-            ip=request.client.host if request.client else "unknown"
+            user_id=mutabakat.receiver_id,
+            ip_info=ip_info,
+            company_id=mutabakat.company_id
         )
         
         # Gönderen şirketin email adresine bildirim gönder
@@ -358,50 +430,6 @@ def submit_kvkk_consent_by_token(
         raise HTTPException(status_code=404, detail="Alıcı bulunamadı")
     
     # IP ve ISP bilgisini al
-    def get_real_ip_with_isp(request: Request) -> dict:
-        """Gerçek public IP adresini ve ISP bilgisini al"""
-        forwarded_for = request.headers.get('X-Forwarded-For')
-        if forwarded_for:
-            client_ip = forwarded_for.split(',')[0].strip()
-        elif request.headers.get('X-Real-IP'):
-            client_ip = request.headers.get('X-Real-IP')
-        else:
-            client_ip = request.client.host if request.client else "unknown"
-        
-        if client_ip in ['127.0.0.1', 'localhost', '::1', 'unknown']:
-            try:
-                response = requests.get('https://api.ipify.org?format=json', timeout=3)
-                if response.status_code == 200:
-                    client_ip = response.json().get('ip')
-            except:
-                pass
-        
-        ip_info = {
-            "ip": client_ip,
-            "isp": "Bilinmiyor",
-            "org": "Bilinmiyor",
-            "city": "Bilinmiyor",
-            "country": "Bilinmiyor"
-        }
-        
-        if client_ip != "unknown":
-            try:
-                response = requests.get(f'http://ip-api.com/json/{client_ip}?fields=status,country,regionName,city,isp,org,query', timeout=5)
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get('status') == 'success':
-                        ip_info = {
-                            "ip": data.get('query', client_ip),
-                            "isp": data.get('isp', 'Bilinmiyor'),
-                            "org": data.get('org', 'Bilinmiyor'),
-                            "city": data.get('city', 'Bilinmiyor'),
-                            "country": data.get('country', 'Bilinmiyor')
-                        }
-            except:
-                pass
-        
-        return ip_info
-    
     try:
         ip_info = get_real_ip_with_isp(request)
     except:
@@ -484,13 +512,16 @@ def submit_kvkk_consent_by_token(
     db.commit()
     db.refresh(consent)
     
-    # Log kaydet
-    ActivityLogger.log_activity(
+    # Log kaydet (ISP bilgili)
+    from backend.logger import log_activity
+    log_activity(
         db=db,
-        user_id=receiver.id,
         action="KVKK_CONSENT_GIVEN_PUBLIC",
-        description=f"KVKK onayı SMS linki üzerinden verildi (Token: {token[:10]}...)",
-        ip=ip_info['ip']
+        description=f"KVKK onayı SMS linki üzerinden verildi (Token: {token[:12]}...)",
+        user_id=receiver.id,
+        ip_info=ip_info,
+        company_id=mutabakat.company_id,
+        user_agent=user_agent
     )
     
     return {
