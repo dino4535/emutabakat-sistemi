@@ -34,6 +34,8 @@ function PublicApproval() {
 
   useEffect(() => {
     fetchMutabakat();
+    // Mutabakat yüklendikten sonra KVKK durumunu kontrol et
+    checkKVKKStatus();
   }, [token]);
 
   const fetchMutabakat = async () => {
@@ -54,6 +56,22 @@ function PublicApproval() {
       toast.error(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkKVKKStatus = async () => {
+    try {
+      const res = await fetch(`${API_URL}/public/mutabakat/${token}/kvkk-status`);
+      if (!res.ok) return; // sessizce geç
+      const data = await res.json();
+      if (data.requires_kvkk_consent) {
+        setShowKVKKConsent(true);
+        await fetchKVKKTexts();
+      } else {
+        setShowKVKKConsent(false);
+      }
+    } catch (e) {
+      // sessizce geç
     }
   };
 

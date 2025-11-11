@@ -473,6 +473,45 @@ def submit_kvkk_consent_by_token(
         )
     }
 
+@router.get("/mutabakat/{token}/kvkk-status")
+def get_kvkk_status_by_token(
+    token: str,
+    db: Session = Depends(get_db)
+) -> Dict:
+    """
+    Token ile KVKK onay durumunu getir (public endpoint)
+    """
+    # Token'ı doğrula
+    mutabakat = verify_approval_token(db, token)
+    if not mutabakat:
+        raise HTTPException(
+            status_code=404,
+            detail="Geçersiz veya kullanılmış link. Bu link artık geçerli değil."
+        )
+    # Alıcıyı bul
+    receiver = mutabakat.receiver
+    if not receiver:
+        raise HTTPException(status_code=404, detail="Alıcı bulunamadı")
+    # KVKK durumu
+    from backend.models import KVKKConsent
+    consent = db.query(KVKKConsent).filter(
+        KVKKConsent.user_id == receiver.id,
+        KVKKConsent.company_id == mutabakat.company_id
+    ).first()
+    missing_consents = []
+    if not consent or not consent.kvkk_policy_accepted:
+        missing_consents.append("kvkk_policy")
+    if not consent or not consent.customer_notice_accepted:
+        missing_consents.append("customer_notice")
+    if not consent or not consent.data_retention_accepted:
+        missing_consents.append("data_retention")
+    if not consent or not consent.system_consent_accepted:
+        missing_consents.append("system_consent")
+    return {
+        "requires_kvkk_consent": len(missing_consents) > 0,
+        "missing_consents": missing_consents
+    }
+
 
 @router.get("/mutabakat/{token}/kvkk-texts")
 def get_kvkk_texts_by_token(
