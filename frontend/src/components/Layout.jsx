@@ -20,6 +20,7 @@ export default function Layout() {
   const [showNotifications, setShowNotifications] = useState(false)
   const notificationRef = useRef(null)
   const queryClient = useQueryClient()
+  const shownNotificationIdsRef = useRef(new Set())
 
   // Touch gesture desteği - mobilde menüyü açıp kapatmak için
   const swipeRef = useSwipe(
@@ -103,6 +104,19 @@ export default function Layout() {
     }
   }
 
+  // Gösterilmiş bildirim ID'lerini localStorage'dan yükle
+  useEffect(() => {
+    const stored = localStorage.getItem('shownNotificationIds')
+    if (stored) {
+      try {
+        const ids = JSON.parse(stored)
+        shownNotificationIdsRef.current = new Set(ids)
+      } catch (e) {
+        console.error('Failed to load shown notification IDs', e)
+      }
+    }
+  }, [])
+
   // SSE: Gerçek zamanlı bildirim akışı (JWT ile)
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -118,10 +132,24 @@ export default function Layout() {
         if (payload?.items) {
           queryClient.setQueryData(['notifications'], payload.items)
         }
+        // Sadece yeni bildirimleri toast olarak göster
         if (payload?.items?.length) {
           const latest = payload.items[0]
-          if (latest?.title && latest?.message) {
-            toast.info(`${latest.title}: ${latest.message}`)
+          if (latest?.id && latest?.title && latest?.message) {
+            // Daha önce gösterilmiş mi kontrol et
+            if (!shownNotificationIdsRef.current.has(latest.id)) {
+              toast.info(`${latest.title}: ${latest.message}`)
+              // ID'yi Set'e ekle
+              shownNotificationIdsRef.current.add(latest.id)
+              // localStorage'a kaydet (max 100 ID tut)
+              const idsArray = Array.from(shownNotificationIdsRef.current)
+              if (idsArray.length > 100) {
+                // En eski ID'leri sil (FIFO)
+                const toRemove = idsArray.slice(0, idsArray.length - 100)
+                toRemove.forEach(id => shownNotificationIdsRef.current.delete(id))
+              }
+              localStorage.setItem('shownNotificationIds', JSON.stringify(Array.from(shownNotificationIdsRef.current)))
+            }
           }
         }
       } catch (e) {
@@ -134,7 +162,7 @@ export default function Layout() {
     }
 
     return () => es.close()
-  }, [user])
+  }, [user, queryClient])
 
   return (
     <div className="layout">
