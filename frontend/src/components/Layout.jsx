@@ -9,6 +9,7 @@ import { FaHome, FaFileAlt, FaPlus, FaSignOutAlt, FaUser, FaUsers, FaCog, FaChar
 import { Notification } from './Notification'
 import { toast } from 'react-toastify'
 import { useSwipe } from '../hooks/useSwipe'
+import { useQueryClient } from '@tanstack/react-query'
 import './Layout.css'
 
 export default function Layout() {
@@ -18,6 +19,7 @@ export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [showNotifications, setShowNotifications] = useState(false)
   const notificationRef = useRef(null)
+  const queryClient = useQueryClient()
 
   // Touch gesture desteği - mobilde menüyü açıp kapatmak için
   const swipeRef = useSwipe(
@@ -111,13 +113,10 @@ export default function Layout() {
 
     es.onmessage = (event) => {
       try {
-        // Backend, SSE data içerisinde JWT ile encode etti. Decode etmeden direkt JSON beklenirse fallback.
-        let payload
-        try {
-          payload = JSON.parse(event.data)
-        } catch {
-          // JWT decode denemeyelim; direkt gösterme (minimal güvenlik için backend zaten doğruladı)
-          return
+        const payload = JSON.parse(event.data)
+        // Cache'i güncelle: bildirim listesine anında yansısın
+        if (payload?.items) {
+          queryClient.setQueryData(['notifications'], payload.items)
         }
         if (payload?.items?.length) {
           const latest = payload.items[0]

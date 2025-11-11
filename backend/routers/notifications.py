@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 from jose import JWTError, jwt
 from backend.auth import SECRET_KEY, ALGORITHM
 import asyncio
+import json
 
 router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
 
@@ -267,7 +268,8 @@ async def notifications_stream(
             # Değiştiyse gönder
             if data != last_payload:
                 last_payload = data
-                yield f"data: {jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)}\n\n"
+                # Düz JSON gönder (istemci tarafında kolay tüketim için)
+                yield f"data: {json.dumps(data)}\n\n"
             else:
                 # keep-alive ping
                 yield ": ping\n\n"
