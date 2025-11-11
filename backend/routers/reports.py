@@ -7,6 +7,9 @@ from backend.models import User, Mutabakat, MutabakatDurumu, UserRole, ActivityL
 from backend.auth import get_current_active_user
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
+from fastapi.responses import StreamingResponse
+import csv
+import io
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
 
@@ -131,6 +134,97 @@ def get_user_performance(
         })
     
     return result
+
+@router.get("/time-series")
+def get_time_series(
+    days: int = Query(90, ge=1, le=365, description="Kaç günlük zaman serisi"),
+    group_by: str = Query("day", pattern="^(day|week)$", description="Gruplama: day|week"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Onay/Red zaman serisi ve ortalama onay süresi (günlük/haftalık)."""
+    mutabakat_company_filter = Mutabakat.company_id == current_user.company_id if current_user.role == UserRole.COMPANY_ADMIN else True
+
+    start_dt = datetime.utcnow() - timedelta(days=days)
+
+    # Veri çek
+    q = db.query(Mutabakat).filter(
+        Mutabakat.created_at >= start_dt,
+        mutabakat_company_filter
+    ).all()
+
+    # Kovalara grupla
+    from collections import defaultdict
+    buckets = defaultdict(lambda: {"sent": 0, "approved": 0, "rejected": 0, "avg_response_days_sum": 0.0, "avg_response_days_cnt": 0})
+
+    def bucket_key(dt: datetime) -> str:
+        if group_by == "week":
+            iso = dt.isocalendar()
+            return f"{iso.year}-W{iso.week:02d}"
+        return dt.strftime("%Y-%m-%d")
+
+    for m in q:
+        if m.gonderim_tarihi:
+            k = bucket_key(m.gonderim_tarihi)
+            buckets[k]["sent"] += 1
+        if m.onay_tarihi:
+            k = bucket_key(m.onay_tarihi)
+            buckets[k]["approved"] += 1
+            if m.gonderim_tarihi:
+                diff_days = (m.onay_tarihi - m.gonderim_tarihi).days
+                buckets[k]["avg_response_days_sum"] += max(diff_days, 0)
+                buckets[k]["avg_response_days_cnt"] += 1
+        if m.red_tarihi:
+            k = bucket_key(m.red_tarihi)
+            buckets[k]["rejected"] += 1
+
+    # Sıralı liste
+    def sort_key(x: str) -> tuple:
+        if group_by == "week":
+            year, w = x.split("-W")
+            return (int(year), int(w))
+        return tuple(map(int, x.split("-")))
+
+    series = []
+    for k in sorted(buckets.keys(), key=sort_key):
+        b = buckets[k]
+        avg_resp = (b["avg_response_days_sum"] / b["avg_response_days_cnt"]) if b["avg_response_days_cnt"] > 0 else 0.0
+        series.append({
+            "bucket": k,
+            "sent": b["sent"],
+            "approved": b["approved"],
+            "rejected": b["rejected"],
+            "avg_response_days": round(float(avg_resp), 2)
+        })
+
+    return {
+        "group_by": group_by,
+        "start": start_dt.isoformat(),
+        "days": days,
+        "series": series
+    }
+
+@router.get("/time-series/export.csv")
+def export_time_series_csv(
+    days: int = Query(90, ge=1, le=365),
+    group_by: str = Query("day", pattern="^(day|week)$"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Zaman serisi CSV export."""
+    data = get_time_series(days=days, group_by=group_by, current_user=current_user, db=db)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["bucket", "sent", "approved", "rejected", "avg_response_days"])
+    for row in data["series"]:
+        writer.writerow([row["bucket"], row["sent"], row["approved"], row["rejected"], row["avg_response_days"]])
+
+    output.seek(0)
+    filename = f"time_series_{group_by}_{days}d.csv"
+    return StreamingResponse(iter([output.read()]), media_type="text/csv", headers={
+        "Content-Disposition": f'attachment; filename="{filename}"'
+    })
 
 @router.get("/monthly-trend")
 def get_monthly_trend(
@@ -761,5 +855,49 @@ def get_pending_heatmap(
                 default=0
             )
         }
+    }
+
+@router.get("/day-hour-heatmap")
+def get_day_hour_heatmap(
+    days: int = Query(30, ge=1, le=365),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Gün-saat ısı haritası (7x24) - gönderilmiş ama henüz cevaplanmamış mutabakatların dağılımı.
+    day: 0=Monday ... 6=Sunday
+    hour: 0..23
+    """
+    mutabakat_company_filter = Mutabakat.company_id == current_user.company_id if current_user.role == UserRole.COMPANY_ADMIN else True
+    start_dt = datetime.utcnow() - timedelta(days=days)
+
+    q = db.query(Mutabakat).filter(
+        Mutabakat.gonderim_tarihi.isnot(None),
+        Mutabakat.gonderim_tarihi >= start_dt,
+        Mutabakat.durum == MutabakatDurumu.GONDERILDI,
+        mutabakat_company_filter
+    ).all()
+
+    # 7x24 matris
+    matrix = [[0 for _ in range(24)] for _ in range(7)]
+
+    for m in q:
+        dt = m.gonderim_tarihi
+        # Python: Monday=0 .. Sunday=6
+        d = dt.weekday()
+        h = dt.hour
+        matrix[d][h] += 1
+
+    # Normalize ve toplamları hesapla
+    max_val = max((v for row in matrix for v in row), default=0)
+    totals_by_day = [sum(row) for row in matrix]
+    totals_by_hour = [sum(matrix[d][h] for d in range(7)) for h in range(24)]
+
+    return {
+        "days": days,
+        "max": max_val,
+        "matrix": matrix,
+        "totals_by_day": totals_by_day,
+        "totals_by_hour": totals_by_hour
     }
 

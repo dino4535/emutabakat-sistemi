@@ -3,17 +3,21 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { 
   FaChartLine, FaUsers, FaFileInvoice, FaCheckCircle, FaTimesCircle, 
-  FaClock, FaTrophy, FaFilter, FaSearch, FaChartBar, FaTable, FaFire 
+  FaClock, FaTrophy, FaFilter, FaSearch, FaChartBar, FaTable, FaFire, 
+  FaDownload, FaCalendarAlt 
 } from 'react-icons/fa'
 import './Reports.css'
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState('overview') // overview, detailed, period, heatmap
+  const [activeTab, setActiveTab] = useState('overview') // overview, detailed, period, heatmap, trends, dayhour
   const [filters, setFilters] = useState({
     userId: '',
     period: ''
   })
   const [heatmapDays, setHeatmapDays] = useState(30)
+  const [trendDays, setTrendDays] = useState(90)
+  const [trendGroupBy, setTrendGroupBy] = useState('day') // day | week
+  const [dayHourDays, setDayHourDays] = useState(30)
 
   // Genel istatistikler
   const { data: overview } = useQuery({
@@ -73,6 +77,24 @@ export default function Reports() {
     }
   })
 
+  // Trend grafikleri (zaman serisi)
+  const { data: timeSeriesData } = useQuery({
+    queryKey: ['reports-time-series', trendDays, trendGroupBy],
+    queryFn: async () => {
+      const response = await axios.get(`/api/reports/time-series?days=${trendDays}&group_by=${trendGroupBy}`)
+      return response.data
+    }
+  })
+
+  // Gün-saat ısı haritası
+  const { data: dayHourData } = useQuery({
+    queryKey: ['reports-day-hour-heatmap', dayHourDays],
+    queryFn: async () => {
+      const response = await axios.get(`/api/reports/day-hour-heatmap?days=${dayHourDays}`)
+      return response.data
+    }
+  })
+
   // Kullanıcı listesi (filtre için)
   const { data: users } = useQuery({
     queryKey: ['users-list'],
@@ -106,6 +128,30 @@ export default function Reports() {
 
   const clearFilters = () => {
     setFilters({ userId: '', period: '' })
+  }
+
+  const handleExportCSV = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/reports/time-series/export.csv?days=${trendDays}&group_by=${trendGroupBy}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (!response.ok) throw new Error('Export failed')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `trend-raporu-${trendDays}gun-${trendGroupBy}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('CSV export hatası:', error)
+      alert('CSV export başarısız oldu')
+    }
   }
 
   return (
@@ -142,6 +188,18 @@ export default function Reports() {
           onClick={() => setActiveTab('heatmap')}
         >
           <FaFire /> Bekleyen Mutabakat Isı Haritası
+        </button>
+        <button 
+          className={`tab ${activeTab === 'trends' ? 'active' : ''}`}
+          onClick={() => setActiveTab('trends')}
+        >
+          <FaChartLine /> Trend Grafikleri
+        </button>
+        <button 
+          className={`tab ${activeTab === 'dayhour' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dayhour')}
+        >
+          <FaCalendarAlt /> Gün-Saat Isı Haritası
         </button>
       </div>
 
@@ -690,6 +748,283 @@ export default function Reports() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Trend Grafikleri Sekmesi */}
+      {activeTab === 'trends' && (
+        <div className="tab-content">
+          {timeSeriesData && (
+            <>
+              {/* Kontroller */}
+              <div className="stats-section">
+                <div className="heatmap-header">
+                  <h2>Onay/Red Trend Analizi</h2>
+                  <div className="heatmap-controls">
+                    <label>Son kaç gün:</label>
+                    <select 
+                      value={trendDays} 
+                      onChange={(e) => setTrendDays(Number(e.target.value))}
+                      className="heatmap-select"
+                    >
+                      <option value={30}>30 Gün</option>
+                      <option value={60}>60 Gün</option>
+                      <option value={90}>90 Gün</option>
+                      <option value={180}>180 Gün</option>
+                      <option value={365}>365 Gün</option>
+                    </select>
+                    <label style={{marginLeft: '16px'}}>Gruplama:</label>
+                    <select 
+                      value={trendGroupBy} 
+                      onChange={(e) => setTrendGroupBy(e.target.value)}
+                      className="heatmap-select"
+                    >
+                      <option value="day">Günlük</option>
+                      <option value="week">Haftalık</option>
+                    </select>
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={handleExportCSV}
+                      style={{marginLeft: '16px'}}
+                    >
+                      <FaDownload /> CSV İndir
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grafikler */}
+              <div className="stats-section">
+                <h3>Gönderilen, Onaylanan ve Reddedilen Mutabakatlar</h3>
+                <div className="trend-chart-container">
+                  <div className="trend-chart">
+                    {timeSeriesData.series.map((item, index) => {
+                      const maxVal = Math.max(...timeSeriesData.series.map(s => Math.max(s.sent, s.approved, s.rejected)))
+                      const sentHeight = maxVal > 0 ? (item.sent / maxVal) * 100 : 0
+                      const approvedHeight = maxVal > 0 ? (item.approved / maxVal) * 100 : 0
+                      const rejectedHeight = maxVal > 0 ? (item.rejected / maxVal) * 100 : 0
+                      const label = trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+                      
+                      return (
+                        <div key={index} className="trend-bar-group">
+                          <div className="trend-bars">
+                            <div 
+                              className="trend-bar sent" 
+                              style={{height: `${sentHeight}%`}}
+                              title={`Gönderilen: ${item.sent}`}
+                            ></div>
+                            <div 
+                              className="trend-bar approved" 
+                              style={{height: `${approvedHeight}%`}}
+                              title={`Onaylanan: ${item.approved}`}
+                            ></div>
+                            <div 
+                              className="trend-bar rejected" 
+                              style={{height: `${rejectedHeight}%`}}
+                              title={`Reddedilen: ${item.rejected}`}
+                            ></div>
+                          </div>
+                          <div className="trend-label">{label}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="trend-legend">
+                    <div className="legend-item">
+                      <span className="legend-color sent"></span>
+                      <span>Gönderilen</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color approved"></span>
+                      <span>Onaylanan</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color rejected"></span>
+                      <span>Reddedilen</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ortalama Onay Süresi */}
+              <div className="stats-section">
+                <h3>Ortalama Onay Süresi (Gün)</h3>
+                <div className="trend-chart-container">
+                  <div className="trend-chart">
+                    {timeSeriesData.series.map((item, index) => {
+                      const maxDays = Math.max(...timeSeriesData.series.map(s => s.avg_response_days || 0), 1)
+                      const height = maxDays > 0 ? ((item.avg_response_days || 0) / maxDays) * 100 : 0
+                      const label = trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+                      
+                      return (
+                        <div key={index} className="trend-bar-group">
+                          <div className="trend-bars">
+                            <div 
+                              className="trend-bar response-time" 
+                              style={{height: `${height}%`}}
+                              title={`Ort. Onay Süresi: ${item.avg_response_days} gün`}
+                            >
+                              {item.avg_response_days > 0 && (
+                                <span className="bar-value">{item.avg_response_days.toFixed(1)}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="trend-label">{label}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Özet Tablo */}
+              <div className="stats-section">
+                <h3>Detaylı Veriler</h3>
+                <div className="table-container">
+                  <table className="detailed-table">
+                    <thead>
+                      <tr>
+                        <th>{trendGroupBy === 'week' ? 'Hafta' : 'Tarih'}</th>
+                        <th>Gönderilen</th>
+                        <th>Onaylanan</th>
+                        <th>Reddedilen</th>
+                        <th>Ort. Onay Süresi (Gün)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {timeSeriesData.series.map((item, index) => (
+                        <tr key={index}>
+                          <td><strong>{trendGroupBy === 'week' ? item.bucket : new Date(item.bucket).toLocaleDateString('tr-TR')}</strong></td>
+                          <td>{item.sent}</td>
+                          <td><span className="badge badge-success">{item.approved}</span></td>
+                          <td><span className="badge badge-danger">{item.rejected}</span></td>
+                          <td>{item.avg_response_days > 0 ? item.avg_response_days.toFixed(2) : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Gün-Saat Isı Haritası Sekmesi */}
+      {activeTab === 'dayhour' && (
+        <div className="tab-content">
+          {dayHourData && (
+            <>
+              {/* Kontroller */}
+              <div className="stats-section">
+                <div className="heatmap-header">
+                  <h2>Gün-Saat Isı Haritası (Bekleyen Mutabakatlar)</h2>
+                  <div className="heatmap-controls">
+                    <label>Son kaç gün:</label>
+                    <select 
+                      value={dayHourDays} 
+                      onChange={(e) => setDayHourDays(Number(e.target.value))}
+                      className="heatmap-select"
+                    >
+                      <option value={7}>7 Gün</option>
+                      <option value={14}>14 Gün</option>
+                      <option value={30}>30 Gün</option>
+                      <option value={60}>60 Gün</option>
+                      <option value={90}>90 Gün</option>
+                    </select>
+                  </div>
+                </div>
+                <p style={{color: 'var(--text-secondary)', marginTop: '8px'}}>
+                  Gönderilmiş ama henüz cevaplanmamış mutabakatların gün ve saat bazında dağılımı
+                </p>
+              </div>
+
+              {/* 7x24 Isı Haritası */}
+              <div className="stats-section">
+                <h3>Gün-Saat Dağılımı</h3>
+                <div className="day-hour-heatmap-container">
+                  <div className="day-hour-heatmap">
+                    {/* Saat başlıkları */}
+                    <div className="day-hour-header">
+                      <div className="day-hour-cell header"></div>
+                      {Array.from({length: 24}, (_, h) => (
+                        <div key={h} className="day-hour-cell header">{h}</div>
+                      ))}
+                      <div className="day-hour-cell header">Toplam</div>
+                    </div>
+                    
+                    {/* Günler */}
+                    {['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'].map((dayName, d) => {
+                      const row = dayHourData.matrix[d]
+                      const total = dayHourData.totals_by_day[d]
+                      const maxVal = dayHourData.max || 1
+                      
+                      return (
+                        <div key={d} className="day-hour-row">
+                          <div className="day-hour-cell day-label">{dayName}</div>
+                          {row.map((count, h) => {
+                            const intensity = maxVal > 0 ? count / maxVal : 0
+                            const opacity = 0.3 + (intensity * 0.7)
+                            const color = intensity > 0.7 ? '#ef4444' : intensity > 0.4 ? '#f97316' : intensity > 0.2 ? '#fbbf24' : '#10b981'
+                            
+                            return (
+                              <div 
+                                key={h}
+                                className="day-hour-cell heatmap-cell"
+                                style={{
+                                  backgroundColor: color,
+                                  opacity: opacity,
+                                  borderColor: color
+                                }}
+                                title={`${dayName} ${h}:00 - ${count} adet`}
+                              >
+                                {count > 0 && <span className="cell-count">{count}</span>}
+                              </div>
+                            )
+                          })}
+                          <div className="day-hour-cell total-cell">
+                            <strong>{total}</strong>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    
+                    {/* Saat toplamları */}
+                    <div className="day-hour-row">
+                      <div className="day-hour-cell header">Toplam</div>
+                      {dayHourData.totals_by_hour.map((total, h) => (
+                        <div key={h} className="day-hour-cell total-cell">
+                          <strong>{total}</strong>
+                        </div>
+                      ))}
+                      <div className="day-hour-cell total-cell">
+                        <strong>{dayHourData.totals_by_day.reduce((a, b) => a + b, 0)}</strong>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="day-hour-legend">
+                    <div className="legend-item">
+                      <span className="legend-color" style={{backgroundColor: '#10b981'}}></span>
+                      <span>Düşük (0-20%)</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{backgroundColor: '#fbbf24'}}></span>
+                      <span>Orta (20-40%)</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{backgroundColor: '#f97316'}}></span>
+                      <span>Yüksek (40-70%)</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{backgroundColor: '#ef4444'}}></span>
+                      <span>Çok Yüksek (70%+)</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </>
